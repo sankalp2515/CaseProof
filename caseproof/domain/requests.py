@@ -87,7 +87,10 @@ def select_requests(gaps: Any, history: Any, policy: Any, urgency_value: Any = 0
                         (
                             "Resolve conflicting or unreadable evidence"
                             if conflicting
-                            or any(g.required_fact == "readable_receipt" for g in matching)
+                            or any(
+                                g.required_fact in {"readable_receipt", "receipt_association"}
+                                for g in matching
+                            )
                             else "Confirm bank-discovered debit before narrative clarification"
                             if any(g.required_fact == "all_transfers_accounted" for g in matching)
                             else "Resolve the highest-scored remaining customer evidence gap"

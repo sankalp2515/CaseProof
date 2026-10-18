@@ -198,7 +198,9 @@ def assess(o: Any, snap: Any, investigate: Any = True) -> Any:
     if needs_readable_receipt(snap):
         gaps.append(Gap(gap_id="gap-readable", required_fact="readable_receipt"))
     snap.gaps = gaps
-    if any(c.confidence_note.startswith("receipt_unassociated:") for c in snap.claims):
+    from caseproof.domain.readiness import unresolved_association_receipt_ids
+
+    if unresolved_association_receipt_ids(snap):
         gaps.append(Gap(gap_id="gap-receipt-association", required_fact="receipt_association"))
     history = [
         r

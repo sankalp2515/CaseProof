@@ -4,10 +4,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+const recoverReceipt = process.env.CASEPROOF_RECEIPT_RECOVERY === "1";
 const require = createRequire(import.meta.url),
   out = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
-    "../../var/analyst-workspace/after",
+    recoverReceipt
+      ? "../../var/receipt-recovery/browser"
+      : "../../var/analyst-workspace/after",
   );
 await fs.mkdir(out, { recursive: true });
 const base = process.env.CASEPROOF_BASE_URL || "http://127.0.0.1:8080",
@@ -99,6 +102,18 @@ async function navigate(p, route) {
 }
 let fullHandoffs = 0;
 try {
+  // Do not mistake a deliberately restarting local API for a rendered-flow failure.
+  // Poll real readiness before opening the application; no response is substituted.
+  let available = false;
+  for (let attempt = 0; attempt < 20; attempt++) {
+    try {
+      const health = await context.request.get(base + "/health");
+      const config = await context.request.get(base + "/v1/ui-config");
+      if (health.ok() && config.ok()) { available = true; break; }
+    } catch {}
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+  assert.ok(available, "Real API health and UI configuration must be available");
   await victim.goto(base + "/app/#/victim/start");
   await victim
     .getByRole("button", { name: "Start a fresh practice session" })
@@ -157,7 +172,7 @@ try {
       );
     await victim.getByRole("button", { name: "Continue", exact: true }).click();
     let savedReceipt;
-    if (run === 0) {
+    if (recoverReceipt ? run === 1 : run === 0) {
       const pending = victim.waitForEvent("download");
       await victim.getByRole("link", { name: /View bank receipt/ }).click();
       const downloaded = await pending;
@@ -172,7 +187,7 @@ try {
       savedReceipt = path.join(out, `receipt-${run}.txt`);
       await fs.writeFile(
         savedReceipt,
-        `SYNTHETIC PRACTICE RECEIPT\nINR ${(tx.amount_minor / 100).toFixed(2)}\nDate: ${local.slice(0, 10)}\nTime: ${local.slice(11, 16)} IST\nTo: ${tx.payee}\nUTR: ${tx.reference}\n`,
+        `SYNTHETIC PRACTICE RECEIPT\nINR ${(tx.amount_minor / 100).toFixed(2)}\nDate: ${local.slice(0, 10)}\nTime: ${local.slice(11, 16)} IST\nTo: ${recoverReceipt ? (tx.payee[0] === "n" ? "m" : "n") + tx.payee.slice(1) : tx.payee}\n${recoverReceipt ? "Reference crop not included" : "UTR: " + tx.reference}\n`,
         "utf8",
       );
     }
@@ -197,10 +212,22 @@ try {
     providers.push(sourceSnapshot.run_meta || []);
     check(
       "Real worker assessed complaint " + (run + 1),
-      run === 0
+      (recoverReceipt ? run === 1 : run === 0)
         ? sourceSnapshot.segments.some((s) => s.box_2d)
         : sourceSnapshot.segments.length > 0,
     );
+    if (recoverReceipt && run === 0) {
+      check(
+        "Unmatched receipt stays blocked before clarification",
+        w.unresolved.includes("receipt_association") &&
+          w.readiness === "REVIEW_REQUIRED",
+      );
+      check(
+        "Backend proposes receipt recovery before other clarification",
+        sourceSnapshot.requests.find((r) => r.state === "proposed")
+          ?.catalogue_id === "identify_receipt_payment",
+      );
+    }
     decisionStages.push({
       caseId: cid,
       stage: "before clarification",
@@ -394,6 +421,20 @@ try {
           ? "A fake support caller instructed me to pay. I followed the caller and later realised the scam."
           : "A caller impersonated bank support and told me to transfer money for account verification. I was deceived and followed the instruction.",
       );
+    if (recoverReceipt && run === 0) {
+      const me = await read("/v1/victim/me");
+      const tx = me.transactions.find((t) => t.txn_id.endsWith("-T1"));
+      const local = new Date(Date.parse(tx.ts) + 19800000).toISOString();
+      const replacement = path.join(out, "clearer-receipt.txt");
+      await fs.writeFile(
+        replacement,
+        `SYNTHETIC REPLACEMENT RECEIPT\nINR ${(tx.amount_minor / 100).toFixed(2)}\nDate: ${local.slice(0, 10)}\nTime: ${local.slice(11, 16)} IST\nTo: ${tx.payee}\nUTR: ${tx.reference}\n`,
+      );
+      await victim
+        .getByLabel("Reply evidence", { exact: true })
+        .setInputFiles(replacement);
+      await shot(victim, "scoped-receipt-reply");
+    }
     await victim
       .getByRole("button", { name: "Submit reply", exact: true })
       .click();
@@ -407,6 +448,27 @@ try {
     const before = w.revision;
     w = await settled(cid);
     check("Reply creates a new assessment revision", w.revision > before);
+    if (recoverReceipt && run === 0) {
+      check(
+        "Bank-matched bound replacement resolves receipt association",
+        !w.unresolved.includes("receipt_association"),
+      );
+      const afterReplacement = await read(`/v1/cases/${cid}`);
+      check(
+        "Original evidence hash is retained after recovery",
+        sourceSnapshot.artifacts.every((a) =>
+          afterReplacement.artifacts.some(
+            (b) => a.artifact_id === b.artifact_id && a.sha256 === b.sha256,
+          ),
+        ),
+      );
+      check(
+        "Original mismatch remains visible in evidence history",
+        afterReplacement.claims.some((c) =>
+          c.confidence_note.startsWith("receipt_unassociated:"),
+        ),
+      );
+    }
     await victim
       .getByRole("button", { name: "Return to your report", exact: true })
       .click();
@@ -442,6 +504,11 @@ try {
         .getByRole("button", { name: "Review complete handoff", exact: true })
         .isDisabled(),
     );
+    if (recoverReceipt && run === 0)
+      check(
+        "Recovered case reaches full readiness without a bypass",
+        w.readiness === "COMPLETE_CANDIDATE",
+      );
     if (!["COMPLETE_CANDIDATE", "ESCALATE_CANDIDATE"].includes(w.readiness)) {
       check(
         "Incomplete receipt cannot be promoted to complete handoff",

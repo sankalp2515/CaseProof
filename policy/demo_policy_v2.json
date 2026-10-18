@@ -1,5 +1,5 @@
 {
-  "version": "demo-policy-v5-analyst-actions",
+  "version": "demo-policy-v6-receipt-recovery",
   "authority": "Synthetic team-authored demo policy; not a bank SOP",
   "required_facts": [
     "amount",
@@ -141,7 +141,7 @@
     },
     {
       "catalogue_id": "identify_receipt_payment",
-      "text": "This receipt cannot yet be matched to a disputed payment. Please identify which payment it describes or provide a clearer receipt.",
+      "text": "We could not match this receipt reliably. Please upload a clearer receipt showing the amount, payment time and payee, or tell us it is unavailable.",
       "facts": [
         "receipt_association"
       ],

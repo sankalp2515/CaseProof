@@ -7,7 +7,7 @@ import uuid
 
 from caseproof.adapters.sqlite_casestore import ConflictError
 from caseproof.domain.contracts import ArtifactRef, CaseSnapshot
-from caseproof.domain.readiness import unresolved_receipt_ids
+from caseproof.domain.readiness import receipt_replacement_target_ids
 from caseproof.domain.requests import blocked
 
 
@@ -53,9 +53,10 @@ class CustomerLinks:
                 ):
                     raise ValueError("send only the highest ranked outstanding request")
                 chosen.state = "accepted"
-                if chosen.catalogue_id == "request_readable_receipt":
+                if chosen.catalogue_id in {"request_readable_receipt", "identify_receipt_payment"}:
                     chosen.explanation.setdefault(
-                        "receipt_artifact_ids", sorted(unresolved_receipt_ids(snap))
+                        "receipt_artifact_ids",
+                        sorted(receipt_replacement_target_ids(snap, chosen.catalogue_id)),
                     )
                     chosen.explanation.setdefault("replacement_artifact_ids", [])
             case.setdefault("active_links", {})[request_id or "initial"] = digest
@@ -129,7 +130,7 @@ class CustomerLinks:
             if (
                 request
                 and request.state == "accepted"
-                and request.catalogue_id == "request_readable_receipt"
+                and request.catalogue_id in {"request_readable_receipt", "identify_receipt_payment"}
                 and kind == "receipt"
             ):
                 request.explanation.setdefault("replacement_artifact_ids", []).append(aid)
