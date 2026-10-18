@@ -123,6 +123,67 @@ def unresolved_receipt_ids(snapshot):
     return unresolved
 
 
+def unresolved_association_receipt_ids(snapshot):
+    """Resolve an OCR association gap only through a bound, bank-matched replacement.
+
+    Retain the original claims/markers. A selected debit or unrelated upload is
+    insufficient, as is a replacement with no independent receipt claim match.
+    """
+    from caseproof.domain.validator import normalized
+
+    grouped = receipt_claims(snapshot)
+    artifacts = {a.artifact_id: a for a in snapshot.artifacts}
+    unresolved = {
+        aid
+        for aid, claims in grouped.items()
+        if any(c.confidence_note.startswith("receipt_unassociated:") for c in claims)
+    }
+    for request in snapshot.requests:
+        targets = request.explanation.get("receipt_artifact_ids", [])
+        replies = request.explanation.get("replacement_artifact_ids", [])
+        if (
+            request.catalogue_id not in {"request_readable_receipt", "identify_receipt_payment"}
+            or request.state != "fulfilled"
+            or len(targets) != 1
+            or targets[0] not in unresolved
+            or len(replies) != 1
+            or replies[0] == targets[0]
+            or replies[0] not in artifacts
+            or artifacts[replies[0]].kind != "receipt"
+            or artifacts[replies[0]].stage != "followup"
+        ):
+            continue
+        original = grouped[targets[0]]
+        replacement = grouped.get(replies[0], [])
+        if any(c.evidence_state in {"unresolved", "conflicted"} for c in replacement):
+            continue
+        refs = {
+            normalized(c.normalized_value) for c in original if c.kind == "transaction_reference"
+        }
+        reply_refs = {
+            normalized(c.normalized_value) for c in replacement if c.kind == "transaction_reference"
+        }
+        if refs and refs != reply_refs:
+            continue
+        # All three identifying observations must come from this replacement,
+        # and must participate in the same scoped ledger match.
+        if any(
+            all(
+                any(c.kind == kind and c.claim_id in match.claim_ids for c in replacement)
+                for kind in ("amount", "txn_datetime", "payee_vpa")
+            )
+            for match in snapshot.ledger_matches
+        ):
+            unresolved.remove(targets[0])
+    return unresolved
+
+
+def receipt_replacement_target_ids(snapshot, catalogue_id):
+    if catalogue_id == "identify_receipt_payment":
+        return unresolved_association_receipt_ids(snapshot)
+    return unresolved_receipt_ids(snapshot)
+
+
 def needs_readable_receipt(snapshot):
     return bool(unresolved_receipt_ids(snapshot))
 
@@ -161,7 +222,7 @@ def assess_readiness(snapshot: Any, policy: Any) -> Any:
         c.claim_id for c in snapshot.claims if c.materiality and c.evidence_state == "conflicted"
     ]
     missing = required - facts
-    if any(c.confidence_note.startswith("receipt_unassociated:") for c in snapshot.claims):
+    if unresolved_association_receipt_ids(snapshot):
         missing.add("receipt_association")
     unavailable = any(
         r.state == "unavailable"

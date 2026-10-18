@@ -15,7 +15,7 @@ const MESSAGES = {
   session_case_limit:
     "This practice session has reached its report limit. Start a fresh practice session to continue.",
   invalid_request_or_state:
-    "That could not be accepted. Attach a PNG or JPEG screenshot or photo, or a plain-text file, up to 5 MB.",
+    "This action is not valid for the current case or submitted details. Refresh the case and check the required fields.",
   request_body_limit:
     "That file is larger than 5 MB. Use a smaller screenshot or photo.",
 };

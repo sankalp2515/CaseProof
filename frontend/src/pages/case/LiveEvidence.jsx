@@ -14,7 +14,7 @@ import {
 } from "../../components/live.jsx";
 import { apiRequest, post, evidenceForm } from "../../api/client.js";
 import { useSession, useAction } from "../../state/resources.jsx";
-import { label, time } from "../../models/caseView.js";
+import { label, time, formatMinor } from "../../models/caseView.js";
 
 export function boxStyle(box) {
   const [top, left, bottom, right] = box;
@@ -29,9 +29,13 @@ export default function Evidence({ view, reload, stale }) {
   const { persona } = useSession(),
     { snapshot: s, workflow: w } = view;
   const action = useAction(reload);
-  const [selected, setSelected] = useState(s.artifacts?.[0]?.artifact_id),
+  const [selected, setSelected] = useState(
+      s.artifacts?.find((a) => a.kind === "receipt")?.artifact_id ||
+        s.artifacts?.[0]?.artifact_id,
+    ),
     [highlight, setHighlight] = useState(null),
-    [boxes, setBoxes] = useState(true);
+    [boxes, setBoxes] = useState(true),
+    [factScope, setFactScope] = useState("current");
   const [file, setFile] = useState(null),
     [kind, setKind] = useState("receipt"),
     [correction, setCorrection] = useState(null),
@@ -52,166 +56,239 @@ export default function Evidence({ view, reload, stale }) {
   const desiredSource = new URLSearchParams(
     location.hash.split("?")[1] || "",
   ).get("source");
+  const sourceAvailable = segments.some((x) => x.segment_id === desiredSource);
   useEffect(() => {
-    if (desiredSource) select(desiredSource);
-  }, [desiredSource, s.case_id]);
+    if (desiredSource && sourceAvailable) select(desiredSource);
+  }, [desiredSource, s.case_id, sourceAvailable]);
+  const fileSegments = new Set(
+    segments
+      .filter((x) => x.artifact_id === artifact?.artifact_id)
+      .map((x) => x.segment_id),
+  );
+  const visibleClaims = claims.filter(
+    (c) =>
+      c.kind !== "embedded_instruction" &&
+      (factScope === "all" ||
+        c.anchor_segment_ids?.some((id) => fileSegments.has(id))),
+  );
+  const processing =
+    w.status === "processing" || ["queued", "running"].includes(w.job?.status);
+  const canEdit =
+    canRequestRole(persona, "analyst") && !stale && !processing && !action.busy;
+  const invalidCorrection =
+    correction &&
+    (correction.kind === "amount"
+      ? !/^\d+$/.test(value) ||
+        !Number.isSafeInteger(Number(value)) ||
+        Number(value) <= 0
+      : !value.trim());
   const run = (fn) => action.run(fn).catch(() => {}),
     root = `/v1/cases/${s.case_id}`;
   return (
-    <div className="g2 evidence-grid">
-      <div className="col gap12">
-        <Card>
-          <CardH
-            title="Evidence originals"
-            sub="Immutable uploaded bytes · cited OCR segments"
-            icon={<FileImage size={17} />}
-          >
-            <button
-              className="btn sm"
-              onClick={() => setBoxes((v) => !v)}
-              aria-pressed={boxes}
-            >
-              Source boxes {boxes ? "on" : "off"}
-            </button>
-          </CardH>
-          <div className="card-b">
-            <div className="artifact-tabs">
-              {artifacts.map((a, i) => (
-                <button
-                  key={a.artifact_id}
-                  className={
-                    "btn sm " +
-                    (artifact?.artifact_id === a.artifact_id ? "dark" : "")
-                  }
-                  onClick={() => {
-                    setSelected(a.artifact_id);
-                    setHighlight(null);
-                  }}
-                >
-                  {label(a.kind)} {i + 1}
-                </button>
-              ))}
-            </div>
-            {artifact ? (
-              <Original
-                artifact={artifact}
-                caseId={s.case_id}
-                persona={persona}
-                segments={segments.filter(
-                  (x) => x.artifact_id === artifact.artifact_id,
-                )}
-                boxes={boxes}
-                highlight={highlight}
-                onSelect={select}
-              />
-            ) : (
-              <Empty>No evidence received.</Empty>
-            )}
-            {artifact && (
-              <GeminiReader
-                caseId={s.case_id}
-                artifact={artifact}
-                persona={persona}
-                onSelect={select}
-              />
-            )}
-            {artifact && (
-              <>
-                <p className="muted mono hash-text">sha256:{artifact.sha256}</p>
-                <small className="muted">
-                  {artifact.byte_count.toLocaleString()} bytes · received{" "}
-                  {time(artifact.received_at)}
-                </small>
-              </>
-            )}
-          </div>
-        </Card>
-        <Card>
-          <CardH
-            title="Additional evidence"
-            sub="Adds a new revision; originals remain unchanged"
-          />
-          <div className="card-b">
-            <ErrorBanner error={action.error} />
-            <label>
-              Evidence kind
-              <select value={kind} onChange={(e) => setKind(e.target.value)}>
-                {["receipt", "messages", "call_log", "narrative"].map((k) => (
-                  <option key={k}>{k}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              PNG, JPEG or UTF-8 text · up to 5 MiB
-              <input
-                aria-label="Staff evidence file"
-                type="file"
-                accept="image/png,image/jpeg,text/plain"
-                onChange={(e) => setFile(e.target.files[0])}
-              />
-            </label>
-            <div className="row gap8 wrap">
-              <button
-                className="btn primary"
-                disabled={
-                  !file ||
-                  !canRequestRole(persona, "analyst") ||
-                  action.busy ||
-                  stale
-                }
-                onClick={() =>
-                  run(async () => {
-                    await apiRequest(root + "/artifacts", {
-                      method: "POST",
-                      body: evidenceForm(file, kind, s.revision),
-                      persona,
-                    });
-                    await post(root + "/process", undefined, persona);
-                    setFile(null);
-                  })
-                }
-              >
-                <Upload size={14} />
-                Upload & assess
-              </button>
-              <button
-                className="btn"
-                disabled={
-                  !canRequestRole(persona, "analyst") ||
-                  action.busy ||
-                  stale ||
-                  ["queued", "running"].includes(w.job?.status)
-                }
-                onClick={() =>
-                  run(() =>
-                    post(
-                      w.job?.status === "failed"
-                        ? "/v1/jobs/" + w.job.job_id + "/retry"
-                        : root + "/process",
-                      undefined,
-                      persona,
-                    ),
-                  )
-                }
-              >
-                {w.job?.status === "failed"
-                  ? "Retry current failed job"
-                  : "Assess received evidence"}
-              </button>
-            </div>
-          </div>
-        </Card>
+    <div className="evidence-workspace">
+      <div className="section-intro">
+        <h2>Check the original. Verify the detail.</h2>
+        <p>
+          Select a file on the left, then compare its extracted details with the
+          cited source. A detail found in an upload is not automatically
+          verified by the bank.
+        </p>
       </div>
-      <div className="col gap12">
-        <Card>
-          <CardH
-            title="Source-linked facts"
-            sub="Reported text, source support and bank verification are distinct"
-          />
-          <div className="card-b col gap8">
-            {claims
-              .filter((c) => c.kind !== "embedded_instruction")
-              .map((c) => (
+      {!canRequestRole(persona, "analyst") && (
+        <div className="banner info">
+          Reviewer view: inspect originals and bank matches. Corrections and new
+          evidence are analyst actions.
+        </div>
+      )}
+      {desiredSource && !sourceAvailable && !processing && (
+        <div className="banner warn">
+          That cited line is not present in this assessment. Inspect the
+          available originals or check the earlier version in Audit.
+        </div>
+      )}
+      <div className="g2 evidence-grid">
+        <div className="col gap12">
+          <Card>
+            <CardH
+              title="Evidence originals"
+              sub="Choose an original and inspect the lines used by this assessment"
+              icon={<FileImage size={17} />}
+            >
+              <button
+                className="btn sm"
+                onClick={() => setBoxes((v) => !v)}
+                aria-pressed={boxes}
+              >
+                Source boxes {boxes ? "on" : "off"}
+              </button>
+            </CardH>
+            <div className="card-b">
+              <div className="artifact-tabs">
+                {artifacts.map((a, i) => (
+                  <button
+                    key={a.artifact_id}
+                    aria-pressed={artifact?.artifact_id === a.artifact_id}
+                    className={
+                      "btn sm " +
+                      (artifact?.artifact_id === a.artifact_id ? "dark" : "")
+                    }
+                    onClick={() => {
+                      setSelected(a.artifact_id);
+                      setHighlight(null);
+                    }}
+                  >
+                    {label(a.kind)} {i + 1}
+                  </button>
+                ))}
+              </div>
+              {highlight && (
+                <p className="source-selection" role="status">
+                  Selected source:{" "}
+                  {segments.find((x) => x.segment_id === highlight)?.text}
+                </p>
+              )}
+              {artifact ? (
+                <Original
+                  artifact={artifact}
+                  caseId={s.case_id}
+                  persona={persona}
+                  segments={segments.filter(
+                    (x) => x.artifact_id === artifact.artifact_id,
+                  )}
+                  boxes={boxes}
+                  highlight={highlight}
+                  onSelect={select}
+                />
+              ) : (
+                <Empty>No evidence received.</Empty>
+              )}
+              {artifact && (
+                <GeminiReader
+                  caseId={s.case_id}
+                  artifact={artifact}
+                  persona={persona}
+                  onSelect={select}
+                />
+              )}
+              {artifact && (
+                <>
+                  <p className="muted mono hash-text">
+                    sha256:{artifact.sha256}
+                  </p>
+                  <small className="muted">
+                    {artifact.byte_count.toLocaleString()} bytes · received{" "}
+                    {time(artifact.received_at)}
+                  </small>
+                </>
+              )}
+            </div>
+          </Card>
+          <Card>
+            <CardH
+              title="Additional evidence"
+              sub="Adds a new revision; originals remain unchanged"
+            />
+            <div className="card-b">
+              <ErrorBanner error={action.error} />
+              <p className="muted">
+                New evidence creates a new assessment and may invalidate an
+                earlier approval.
+              </p>
+              <label>
+                Evidence kind
+                <select value={kind} onChange={(e) => setKind(e.target.value)}>
+                  {["receipt", "messages", "call_log", "narrative"].map((k) => (
+                    <option key={k} value={k}>
+                      {label(k)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                PNG, JPEG or UTF-8 text · up to 5 MiB
+                <input
+                  aria-label="Staff evidence file"
+                  type="file"
+                  accept="image/png,image/jpeg,text/plain"
+                  onChange={(e) => setFile(e.target.files[0])}
+                />
+              </label>
+              <div className="row gap8 wrap">
+                <button
+                  className="btn primary"
+                  disabled={!file || !canEdit}
+                  onClick={() =>
+                    run(async () => {
+                      await apiRequest(root + "/artifacts", {
+                        method: "POST",
+                        body: evidenceForm(file, kind, s.revision),
+                        persona,
+                      });
+                      await post(root + "/process", undefined, persona);
+                      setFile(null);
+                    })
+                  }
+                >
+                  <Upload size={14} />
+                  Upload & assess
+                </button>
+                <button
+                  className="btn"
+                  disabled={
+                    !canEdit || ["queued", "running"].includes(w.job?.status)
+                  }
+                  onClick={() =>
+                    run(() =>
+                      post(
+                        w.job?.status === "failed"
+                          ? "/v1/jobs/" + w.job.job_id + "/retry"
+                          : root + "/process",
+                        undefined,
+                        persona,
+                      ),
+                    )
+                  }
+                >
+                  {w.job?.status === "failed"
+                    ? "Retry current failed job"
+                    : "Assess received evidence"}
+                </button>
+              </div>
+            </div>
+          </Card>
+        </div>
+        <div className="col gap12">
+          <Card>
+            <CardH
+              title="Details extracted from evidence"
+              sub="Compare each value with its source before using it"
+              tour="source-linked-facts"
+            />
+            <div className="card-b col gap8">
+              <label className="fact-filter">
+                Show details from
+                <select
+                  aria-label="Evidence fact scope"
+                  value={factScope}
+                  onChange={(e) => setFactScope(e.target.value)}
+                >
+                  <option value="current">Selected file</option>
+                  <option value="all">All evidence files</option>
+                </select>
+              </label>
+              <div className="evidence-legend">
+                <span>
+                  <b>Seen on evidence</b> means the source contains this detail.
+                </span>
+                <span>
+                  <b>Bank matched</b> means the separate ledger check confirms
+                  the payment.
+                </span>
+                <span>
+                  <b>Conflicting / unresolved</b> needs analyst attention.
+                </span>
+              </div>
+              {visibleClaims.map((c) => (
                 <div
                   className={
                     "fact " +
@@ -232,12 +309,20 @@ export default function Evidence({ view, reload, stale }) {
                             style: "currency",
                             currency: "INR",
                           }).format(c.normalized_value / 100)
-                        : String(c.normalized_value ?? "Unresolved")}
+                        : c.kind === "txn_datetime" &&
+                            Number.isFinite(Date.parse(c.normalized_value))
+                          ? time(c.normalized_value)
+                          : String(c.normalized_value ?? "Unresolved")}
                     </div>
                     <div className="muted quote">{c.original_text}</div>
                     <div className="row gap6 wrap">
-                      {c.anchor_segment_ids.map((id) => (
-                        <SourceChip key={id} id={id} onSelect={select} />
+                      {(c.anchor_segment_ids || []).map((id, i) => (
+                        <SourceChip
+                          key={id}
+                          id={id}
+                          caption={"View source " + (i + 1)}
+                          onSelect={select}
+                        />
                       ))}
                     </div>
                     {c.confidence_note && (
@@ -248,7 +333,7 @@ export default function Evidence({ view, reload, stale }) {
                     <Status value={c.evidence_state} />
                     <button
                       className="btn sm"
-                      disabled={!canRequestRole(persona, "analyst") || stale}
+                      disabled={!canEdit}
                       onClick={() => {
                         setCorrection({ ...c, revision: s.revision });
                         setValue(String(c.normalized_value ?? ""));
@@ -260,37 +345,50 @@ export default function Evidence({ view, reload, stale }) {
                   </div>
                 </div>
               ))}
-            {!claims.length && (
-              <Empty>
-                Claims appear after actual assessment. No predefined facts are
-                inserted.
-              </Empty>
-            )}
-          </div>
-        </Card>
-        <Card>
-          <CardH
-            title="Own-bank matches"
-            icon={<Database size={16} />}
-            sub="Ledger source, separate from the victim's account"
-          />
-          <div className="card-b">
-            {(s.ledger_matches || []).map((m) => (
-              <div key={m.txn_id} className="statement">
-                <b className="mono">{m.txn_id}</b>
-                <p>
-                  {Object.entries(m.resolved_fields)
-                    .map(([k, v]) => label(k) + ": " + v)
-                    .join(" · ")}
-                </p>
-                <Badge tone="ok">Bank matched · synthetic ledger</Badge>
-              </div>
-            ))}
-            {!s.ledger_matches?.length && (
-              <Empty>No bank-matched disputed payment.</Empty>
-            )}
-          </div>
-        </Card>
+              {!visibleClaims.length && (
+                <Empty>
+                  {processing
+                    ? "Processing this evidence. Extracted details will appear when assessment finishes."
+                    : factScope === "current"
+                      ? "No extracted details for this file. Inspect the original or choose All evidence files; no facts are invented to fill the panel."
+                      : "No usable extracted details in this assessment. Inspect the originals and any processing error."}
+                </Empty>
+              )}
+            </div>
+          </Card>
+          <Card>
+            <CardH
+              title="Own-bank matches"
+              icon={<Database size={16} />}
+              sub="Independently checked against our bank’s payment records"
+            />
+            <div className="card-b">
+              {(s.ledger_matches || []).map((m) => (
+                <div key={m.txn_id} className="statement">
+                  <b className="mono">{m.txn_id}</b>
+                  <p>
+                    {Object.entries(m.resolved_fields)
+                      .map(
+                        ([k, v]) =>
+                          label(k) +
+                          ": " +
+                          (k === "amount"
+                            ? formatMinor(v)
+                            : k === "txn_datetime"
+                              ? time(v)
+                              : String(v)),
+                      )
+                      .join(" · ")}
+                  </p>
+                  <Badge tone="ok">Bank matched · synthetic ledger</Badge>
+                </div>
+              ))}
+              {!s.ledger_matches?.length && (
+                <Empty>No bank-matched disputed payment.</Empty>
+              )}
+            </div>
+          </Card>
+        </div>
       </div>
       {correction && (
         <Modal
@@ -305,9 +403,9 @@ export default function Evidence({ view, reload, stale }) {
                 className="btn primary"
                 disabled={
                   !reason.trim() ||
-                  action.busy ||
-                  correction.revision !== s.revision ||
-                  stale
+                  invalidCorrection ||
+                  !canEdit ||
+                  correction.revision !== s.revision
                 }
                 onClick={() =>
                   run(async () => {
@@ -335,6 +433,13 @@ export default function Evidence({ view, reload, stale }) {
             Amount values use integer paisa. The correction still needs support
             in the cited source.
           </p>
+          {invalidCorrection && (
+            <p className="warn-text">
+              {correction.kind === "amount"
+                ? "Enter a positive whole number of paisa, for example 5100000 for ₹51,000.00."
+                : "Enter a non-empty corrected value."}
+            </p>
+          )}
           <label>
             Corrected value
             <input value={value} onChange={(e) => setValue(e.target.value)} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { IntakeHelper } from "../../components/Gemini.jsx";
 import BankBuilder, { waitForBank } from "./BankBuilder.jsx";
 import {
@@ -12,6 +12,7 @@ import {
   Clock,
   Landmark,
   MessageSquare,
+  X,
 } from "lucide-react";
 import {
   Card,
@@ -41,10 +42,37 @@ import { recentPayments, contactWarning } from "../../models/reportGuidance.js";
 import { TourButton } from "../../tour/Tour.jsx";
 
 export default function Victim({ route }) {
+  const appRef = useRef(null);
   const parts = route.split("/");
+  const [reportStep, setReportStep] = useState(0);
+  const [registeredCase, setRegisteredCase] = useState(null);
+  const [dismissedHandoff, setDismissedHandoff] = useState(null);
+  const handoffCase =
+    parts[2] === "complaints" && registeredCase === parts[3]
+      ? registeredCase
+      : null;
+  const reporting = parts[2] === "report";
   const { setPersona } = useSession();
+  useEffect(() => {
+    if (handoffCase && appRef.current) appRef.current.scrollTop = 0;
+  }, [handoffCase]);
   return (
-    <div className="victim-app">
+    <div
+      ref={appRef}
+      className={"victim-app victim-premium victim-page-" + parts[2]}
+    >
+      <a
+        className="victim-skip"
+        href="#victim-content"
+        onClick={(event) => {
+          event.preventDefault();
+          const main = document.getElementById("victim-content");
+          main?.focus();
+          main?.scrollIntoView({ block: "start" });
+        }}
+      >
+        Skip to content
+      </a>
       <header className="victim-header">
         <button
           className="brand-button row gap10"
@@ -58,56 +86,147 @@ export default function Victim({ route }) {
             <small>Cedar Demo Bank · reporting portal</small>
           </div>
         </button>
-        <div className="row gap8">
+        <div className="row gap8 victim-header-actions">
           <TourButton />
+          <span id="victim-tour-slot" />
           {auth.personas && (
             <button
-              className="btn sm"
+              className={
+                "btn sm" + (handoffCase ? " primary demo-handoff-button" : "")
+              }
+              data-tour="analyst-demo-handoff"
+              aria-label={
+                handoffCase ? "Continue as analyst demo" : "Analyst demo"
+              }
               onClick={() => {
                 setPersona("analyst");
-                go("/staff/queue");
+                go(
+                  handoffCase
+                    ? `/staff/cases/${handoffCase}/overview`
+                    : "/staff/queue",
+                );
               }}
             >
-              Analyst demo
+              {handoffCase ? "Continue as analyst" : "Analyst demo"}
             </button>
           )}
-          <Badge tone="warn">Synthetic demonstration</Badge>
+          <span className="practice-label">
+            <span />
+            Synthetic demonstration
+          </span>
         </div>
       </header>
-      <div className="victim-layout">
-        <aside className="victim-guide">
-          <h2>A clear next step, at your pace.</h2>
-          <p>
-            <b>Why report promptly?</b> The golden hour is the first 60 minutes
-            after a payment. The server uses payment timestamps to prioritise
-            the response; AI does not decide the clock. Reporting promptly
-            cannot guarantee recovery.
-          </p>
-          <ol>
-            <li>Choose your payments</li>
-            <li>Tell us what happened</li>
-            <li>Share relevant evidence</li>
-            <li>Return for updates</li>
-          </ol>
-          <p>
-            You can leave unknown details blank. Your fraud desk will ask only
-            for what is needed.
-          </p>
-          <div className="hr" />
-          <p>
-            Never share an OTP, PIN or password. A report acknowledgement does
-            not mean funds are held or recovered.
-          </p>
+      {auth.personas && handoffCase && dismissedHandoff !== handoffCase && (
+        <aside
+          className="demo-handoff-notice"
+          aria-label="Demo journey next step"
+        >
+          <div role="status">
+            <span className="eyebrow">Next in your demo</span>
+            <h2>Your report is submitted.</h2>
+            <p>
+              You’ve completed the customer journey. Use{" "}
+              <b>Continue as analyst</b> above to explore this case’s
+              investigation, money trail and next action.
+            </p>
+          </div>
+          <button
+            className="icon-btn"
+            aria-label="Dismiss analyst guidance"
+            onClick={() => setDismissedHandoff(handoffCase)}
+          >
+            <X size={16} />
+          </button>
         </aside>
-        <main className="victim-main">
+      )}
+      <details className="mobile-reporting-support">
+        <summary>
+          <Clock size={16} />
+          Why reporting promptly matters
+        </summary>
+        <p>
+          The golden hour is the first 60 minutes after a payment. Your bank
+          uses payment time to prioritise its response. Recovery cannot be
+          guaranteed.
+        </p>
+      </details>
+      <div className="victim-layout">
+        <aside className="victim-guide" aria-label="Reporting guidance">
+          <div className="support-label">
+            <ShieldCheck size={18} /> Reporting support
+          </div>
+          <h2>
+            A clear next step,
+            <br />
+            at your pace.
+          </h2>
+          <p>
+            You don’t need all the answers to ask for help. Start with what you
+            know.
+          </p>
+          <ol className="support-journey">
+            {[
+              ["Choose your payments", "Select what concerns you"],
+              ["Tell us what happened", "In your own words"],
+              ["Share relevant evidence", "Add what you have"],
+              ["Review your report", "Check before you send"],
+            ].map(([title, description], i) => (
+              <li
+                key={title}
+                className={
+                  reporting && reportStep === i
+                    ? "current"
+                    : reporting && reportStep > i
+                      ? "complete"
+                      : ""
+                }
+                aria-current={
+                  reporting && reportStep === i ? "step" : undefined
+                }
+              >
+                <span className="journey-number">
+                  {reporting && reportStep > i ? (
+                    <Check size={14} />
+                  ) : (
+                    String(i + 1).padStart(2, "0")
+                  )}
+                </span>
+                <div>
+                  <b>{title}</b>
+                  <small>{description}</small>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <div className="reporting-priority">
+            <Clock size={20} />
+            <div>
+              <b>Every minute matters.</b>
+              <p>
+                The golden hour is the first 60 minutes after a payment. Your
+                bank uses payment time to prioritise its response. Recovery
+                cannot be guaranteed.
+              </p>
+            </div>
+          </div>
+          <div className="support-safety">
+            <ShieldCheck size={18} />
+            <p>Never share an OTP, PIN, password or remote access.</p>
+          </div>
+        </aside>
+        <main className="victim-main" id="victim-content" tabIndex={-1}>
           {parts[2] === "start" ? (
             <Start />
           ) : parts[2] === "home" ? (
             <Home />
           ) : parts[2] === "report" ? (
-            <Report />
+            <Report onStepChange={setReportStep} />
           ) : parts[2] === "complaints" ? (
-            <Complaint key={parts[3]} caseId={parts[3]} />
+            <Complaint
+              key={parts[3]}
+              caseId={parts[3]}
+              onRegistered={setRegisteredCase}
+            />
           ) : parts[2] === "reply" ? (
             <Reply key={parts[3]} token={decodeURIComponent(parts[3] || "")} />
           ) : (
@@ -182,16 +301,19 @@ function Start() {
     <>
       <div className="victim-title">
         <div className="eyebrow">Cedar Demo Bank</div>
-        <h1>Let's take the next step.</h1>
+        <h1>
+          Support starts
+          <br />
+          with a clear next step.
+        </h1>
         <p>
-          Play a customer who has just been scammed. A fresh fictional bank,
-          scam payment and money trail are generated for you, timed the way you
-          choose.
+          Try the complete reporting experience with a fictional customer.
+          Choose a payment time, prepare your practice bank, then tell us what
+          happened.
         </p>
-        <p className="banner info same-browser">
-          Generating your practice bank takes about 20 seconds. Keep using this
-          browser: the fraud-desk view of your report opens here too, because
-          it belongs to this browser's practice session.
+        <p className="same-browser">
+          <Clock size={15} /> Setup takes about 20 seconds. Stay in this browser
+          to follow your report through the fraud desk.
         </p>
       </div>
       {(catalogue || resource.data)?.version < 5 && (
@@ -203,8 +325,8 @@ function Start() {
       )}
       <Card>
         <CardH
-          title="Start a live practice scam"
-          sub="Everything is generated now for this session only"
+          title="Set up your practice experience"
+          sub="A new fictional bank, payments and money trail for this session"
         />
         <div className="card-b col gap12">
           <fieldset className="scam-timing">
@@ -406,29 +528,42 @@ function Home() {
           Tell us which payments concern you. You can return here for updates
           and focused questions.
         </p>
-        <p className="banner info">
-          For a golden-hour practice case, start a fresh session and report the
-          recent safe-account payment. Its downstream bank records are prepared
-          independently of your report. Older payments remain reportable; their
-          first-hour window will show as elapsed.
+        <details className="practice-help">
+          <summary>How to explore a golden-hour practice case</summary>
+          <p>
+            Start a fresh session and report the recent safe-account payment.
+            Its downstream bank records are prepared independently of your
+            report. Older payments remain reportable; their first-hour window
+            will show as elapsed.
+          </p>
+        </details>
+      </div>
+      <section className="report-invitation" aria-label="Start a report">
+        <div className="invitation-icon">
+          <ShieldCheck size={26} />
+        </div>
+        <h2>Something doesn’t look right?</h2>
+        <p>
+          Choose the payments that concern you. Your fraud desk will help
+          connect the details.
         </p>
-      </div>
-      <div className="row gap8 wrap victim-actions">
-        <button
-          className="btn primary lg"
-          data-tour="report-scam"
-          onClick={() => go("/victim/report")}
-        >
-          <Plus size={15} />
-          Report a payment scam
-        </button>
-        <button className="btn" onClick={resource.reload}>
-          Check for updates
-        </button>
-        <button className="btn ghost" onClick={() => go("/victim/start")}>
-          Change demo customer
-        </button>
-      </div>
+        <div className="row gap8 wrap victim-actions">
+          <button
+            className="btn primary lg"
+            data-tour="report-scam"
+            onClick={() => go("/victim/report")}
+          >
+            <Plus size={15} />
+            Report a payment scam
+          </button>
+          <button className="btn" onClick={resource.reload}>
+            Check for updates
+          </button>
+          <button className="btn ghost" onClick={() => go("/victim/start")}>
+            Change demo customer
+          </button>
+        </div>
+      </section>
       <ErrorBanner error={resource.error} />
       <Card>
         <CardH
@@ -460,9 +595,11 @@ function Home() {
           sub="Bank records establish a payment; you decide whether it belongs in your complaint"
         />
         <div className="card-b">
-          {me.transactions.slice(0, 12).map((t) => (
-            <Payment key={t.txn_id} t={t} />
-          ))}
+          {recentPayments(me.transactions)
+            .slice(0, 12)
+            .map((t) => (
+              <Payment key={t.txn_id} t={t} />
+            ))}
         </div>
       </Card>
     </>
@@ -500,7 +637,8 @@ function Payment({ t, children }) {
     </div>
   );
 }
-function Report() {
+function Report({ onStepChange }) {
+  const formRef = useRef(null);
   const me = useMe(),
     { config } = useSession();
   const action = useAction();
@@ -519,6 +657,23 @@ function Report() {
     [files, setFiles] = useState([]),
     [validation, setValidation] = useState(""),
     [journal, setJournal] = useState(null);
+  useEffect(() => {
+    onStepChange(step);
+    {
+      const heading = formRef.current?.querySelector("h2");
+      heading?.focus({ preventScroll: true });
+      heading?.scrollIntoView({ behavior: "instant", block: "center" });
+    }
+  }, [step, onStepChange]);
+  useEffect(() => {
+    const back = (event) => {
+      if (action.busy || ![0, 1].includes(event.detail)) return;
+      setStep((current) => Math.min(current, event.detail));
+      setValidation("");
+    };
+    window.addEventListener("caseproof:report-back", back);
+    return () => window.removeEventListener("caseproof:report-back", back);
+  }, [action.busy]);
   const account = me.data?.customer.account;
   useEffect(() => {
     if (account) setJournal(readJournal(account));
@@ -588,10 +743,25 @@ function Report() {
           New report ·{" "}
           {me.data.customer.display_name.replace(/ \(synthetic\)$/i, "")}
         </div>
-        <h1>Tell us what happened.</h1>
+        <h1>
+          {
+            [
+              "Let’s start with the payment.",
+              "Your story, in your words.",
+              "Add what you have.",
+              "Ready when you are.",
+            ][step]
+          }
+        </h1>
         <p>
-          You can leave unknown details blank. Share only evidence relevant to
-          these payments.
+          {
+            [
+              "Select the payments you believe are related to the scam.",
+              "Tell us what you remember. You can leave unknown details blank.",
+              "Receipts, messages and call logs can help your fraud desk understand what happened.",
+              "Check the details below before sending them to your fraud desk.",
+            ][step]
+          }
         </p>
       </div>
       {existing && !action.busy && (
@@ -618,11 +788,12 @@ function Report() {
           )}
         </div>
       )}
-      <ol className="form-progress">
+      <ol className="form-progress" aria-label="Report progress">
         {["Payments", "What happened", "Evidence", "Review"].map((name, i) => (
           <li
             key={name}
             className={step === i ? "active" : step > i ? "done" : ""}
+            aria-current={step === i ? "step" : undefined}
           >
             <span>{step > i ? <Check size={13} /> : i + 1}</span>
             {name}
@@ -630,7 +801,7 @@ function Report() {
         ))}
       </ol>
       <Card>
-        <div className="card-b report-form">
+        <div className="card-b report-form" ref={formRef}>
           <ErrorBanner error={action.error} />
           {validation && (
             <div className="banner crit" role="alert">
@@ -639,7 +810,7 @@ function Report() {
           )}
           {step === 0 && (
             <>
-              <h2 data-tour="report-payments">
+              <h2 tabIndex={-1} data-tour="report-payments">
                 Which payments do you want to dispute?
               </h2>
               <p className="muted">
@@ -647,19 +818,28 @@ function Report() {
                 report. A candidate is not automatically disputed.
               </p>
               {recentPayments(me.data.transactions).map((t) => (
-                <label className="select-payment" key={t.txn_id}>
+                <label
+                  className={
+                    "select-payment" +
+                    (selected.includes(t.txn_id) && !unknown
+                      ? " is-selected"
+                      : "")
+                  }
+                  key={t.txn_id}
+                >
                   <input
                     type="checkbox"
                     aria-label={"Dispute payment " + t.txn_id}
                     disabled={unknown}
                     checked={selected.includes(t.txn_id) && !unknown}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      setValidation("");
                       setSelected((old) =>
                         e.target.checked
                           ? [...old, t.txn_id].slice(0, 20)
                           : old.filter((id) => id !== t.txn_id),
-                      )
-                    }
+                      );
+                    }}
                   />
                   <Payment t={t} />
                 </label>
@@ -668,7 +848,10 @@ function Report() {
                 <input
                   type="checkbox"
                   checked={unknown}
-                  onChange={(e) => setUnknown(e.target.checked)}
+                  onChange={(e) => {
+                    setUnknown(e.target.checked);
+                    setValidation("");
+                  }}
                 />
                 I cannot identify the payment yet
               </label>
@@ -676,7 +859,9 @@ function Report() {
           )}
           {step === 1 && (
             <>
-              <h2 data-tour="report-narrative">Your account of the incident</h2>
+              <h2 tabIndex={-1} data-tour="report-narrative">
+                Your account of the incident
+              </h2>
               <label>
                 What happened?
                 <textarea
@@ -755,18 +940,14 @@ function Report() {
           )}
           {step === 2 && (
             <>
-              <h2 data-tour="report-evidence">Share relevant evidence</h2>
+              <h2 tabIndex={-1} data-tour="report-evidence">
+                Share relevant evidence
+              </h2>
               <p className="muted">
                 Optional · PNG, JPEG or UTF-8 text · 5 MiB per file. Up to 5
                 initial attachments; narrative uses the sixth slot. Total case
                 limit 20 MiB. PDF is not supported.
               </p>
-              <SampleEvidence
-                selected={selected}
-                narrative={narrative}
-                setFiles={setFiles}
-                count={files.length}
-              />
               <label className="upload-zone">
                 <Upload size={24} />
                 <b>Choose actual evidence files</b>
@@ -788,6 +969,13 @@ function Report() {
                 />
               </label>
               <UploadList files={files} setFiles={setFiles} />
+              <SampleEvidence
+                selected={selected}
+                narrative={narrative}
+                setFiles={setFiles}
+                count={files.length}
+              />
+
               <p className="muted">
                 To test receipt OCR, download a supported bank receipt from your
                 payment list, then attach the saved original.
@@ -806,7 +994,9 @@ function Report() {
           )}
           {step === 3 && (
             <>
-              <h2 data-tour="report-review">Review your report</h2>
+              <h2 tabIndex={-1} data-tour="report-review">
+                Review your report
+              </h2>
               <div className="bound">
                 <p>
                   <b>
@@ -840,6 +1030,13 @@ function Report() {
             </>
           )}
           <div className="form-footer">
+            <span className="submission-context" role="status">
+              {step === 0
+                ? unknown
+                  ? "Payment to be identified"
+                  : `${selected.length} payment${selected.length === 1 ? "" : "s"} selected`
+                : `Step ${step + 1} of 4`}
+            </span>
             <button
               className="btn"
               disabled={step === 0 || action.busy}
@@ -893,7 +1090,16 @@ function UploadList({ files, setFiles }) {
             }
           >
             {["receipt", "messages", "call_log", "narrative"].map((k) => (
-              <option key={k}>{k}</option>
+              <option key={k} value={k}>
+                {
+                  {
+                    receipt: "Payment receipt",
+                    messages: "Messages",
+                    call_log: "Call log",
+                    narrative: "Written account",
+                  }[k]
+                }
+              </option>
             ))}
           </select>
           <button
@@ -907,8 +1113,7 @@ function UploadList({ files, setFiles }) {
     </div>
   );
 }
-function Complaint({ caseId }) {
-  const { setPersona } = useSession();
+function Complaint({ caseId, onRegistered }) {
   const resource = useResource(
       "victim-case:" + caseId,
       (signal) => apiRequest("/v1/victim/complaints/" + caseId, { signal }),
@@ -922,6 +1127,9 @@ function Complaint({ caseId }) {
     account = me.data?.customer.account,
     journal = account ? readJournal(account) : null;
   const run = (fn) => action.run(fn).catch(() => {});
+  useEffect(() => {
+    if (c) onRegistered(caseId);
+  }, [!!c, caseId, onRegistered]);
   return (
     <>
       <button className="btn ghost" onClick={() => go("/victim/home")}>
@@ -954,18 +1162,7 @@ function Complaint({ caseId }) {
                 </span>
                 <div className="grow">
                   <h2>Report registered</h2>
-                  {auth.personas && (
-                    <button
-                      className="btn primary"
-                      onClick={() => {
-                        setPersona("analyst");
-                        go(`/staff/cases/${caseId}/overview`);
-                      }}
-                    >
-                      Continue as analyst demo <ArrowRight size={14} />
-                    </button>
-                  )}
-                  <p>{c.status}</p>
+                  <p>{label(c.status)}</p>
                 </div>
                 <Status value={c.processing?.state} />
               </div>
@@ -976,6 +1173,14 @@ function Complaint({ caseId }) {
               <button className="btn" onClick={resource.reload}>
                 Check for updates
               </button>
+              <div className="report-next">
+                <span className="eyebrow">What happens next</span>
+                <h3>Your fraud desk takes it from here.</h3>
+                <p>
+                  Your report is assessed against evidence and bank records.
+                  Return here for updates or any focused questions.
+                </p>
+              </div>
               <div className="banner info">{c.note}</div>
             </div>
           </Card>
@@ -1219,7 +1424,7 @@ function Reply({ token }) {
   return (
     <>
       <div className="victim-title">
-        <div className="eyebrow">Secure scoped reply</div>
+        <div className="eyebrow">A message from your fraud desk</div>
         <h1>
           {done
             ? "Thank you. Your reply is received."
@@ -1233,8 +1438,8 @@ function Reply({ token }) {
           <div className="receipt-check">
             <Check size={24} />
           </div>
-          <h2>Your evidence will be assessed.</h2>
-          <p>A reply is not a recovery confirmation.</p>
+          <h2>Your reply is with the fraud desk.</h2>
+          <p>You can return to your report for the next update.</p>
           <button
             className="btn primary"
             onClick={() =>

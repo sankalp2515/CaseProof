@@ -65,11 +65,12 @@ class CustomerLinks:
             old = snap.revision
             if request_id:
                 chosen = next(r for r in snap.requests if r.request_id == request_id)
-                if chosen.catalogue_id == "request_readable_receipt":
-                    from caseproof.domain.readiness import unresolved_receipt_ids
+                if chosen.catalogue_id in {"request_readable_receipt", "identify_receipt_payment"}:
+                    from caseproof.domain.readiness import receipt_replacement_target_ids
 
                     chosen.explanation.setdefault(
-                        "receipt_artifact_ids", sorted(unresolved_receipt_ids(snap))
+                        "receipt_artifact_ids",
+                        sorted(receipt_replacement_target_ids(snap, chosen.catalogue_id)),
                     )
                     chosen.explanation.setdefault("replacement_artifact_ids", [])
             snap.revision += 1

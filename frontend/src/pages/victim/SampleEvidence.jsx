@@ -17,19 +17,29 @@ export default function SampleEvidence({
   );
   const action = useAction();
   const [ai, setAi] = useState(false);
+  const [pendingKind, setPendingKind] = useState(null);
   async function create(kind) {
     await action
       .run(async () => {
-        const response = await apiRequest("/v1/victim/sample-evidence", {
-          method: "POST",
-          raw: true,
-          body: { transaction_id: selected[0], kind, narrative, ai },
-        });
-        const blob = await response.blob();
-        const file = new File([blob], `synthetic-${kind}-${selected[0]}.png`, {
-          type: "image/png",
-        });
-        setFiles((old) => [...old, { file, kind }]);
+        setPendingKind(kind);
+        try {
+          const response = await apiRequest("/v1/victim/sample-evidence", {
+            method: "POST",
+            raw: true,
+            body: { transaction_id: selected[0], kind, narrative, ai },
+          });
+          const blob = await response.blob();
+          const file = new File(
+            [blob],
+            `synthetic-${kind}-${selected[0]}.png`,
+            {
+              type: "image/png",
+            },
+          );
+          setFiles((old) => [...old, { file, kind }]);
+        } finally {
+          setPendingKind(null);
+        }
       })
       .catch(() => {});
   }
@@ -56,11 +66,15 @@ export default function SampleEvidence({
           Use AI to write the fictional example
         </label>
       )}
-      {resource.loading && <p className="muted" role="status">Checking sample-writing capabilities…</p>}
+      {resource.loading && (
+        <p className="muted" role="status">
+          Checking sample-writing capabilities…
+        </p>
+      )}
       {!resource.loading && !resource.error && !resource.data?.ai_available && (
         <p className="muted">
-          Create sample documents below or upload your own evidence.
-          AI writing is unavailable for the configured provider in this environment.
+          Create sample documents below or upload your own evidence. AI writing
+          is unavailable for the configured provider in this environment.
         </p>
       )}
       {!selected.length && (
@@ -79,9 +93,12 @@ export default function SampleEvidence({
             key={kind}
             className="btn sm"
             disabled={!selected.length || count >= 5 || action.busy}
+            aria-busy={pendingKind === kind}
             onClick={() => create(kind)}
           >
-            {action.busy ? "Creating sample…" : `Create synthetic ${title}`}
+            {pendingKind === kind
+              ? `Creating ${title}…`
+              : `Create synthetic ${title}`}
           </button>
         ))}
       </div>

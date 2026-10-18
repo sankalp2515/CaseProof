@@ -491,7 +491,17 @@ function Case({ caseId, tab }) {
             <div className="col gap6 grow case-summary">
               <div className="mono muted">Cases / {caseId}</div>
               <div className="row gap8 wrap">
-                <h1>Investigation brief</h1>
+                <h1>
+                  {{
+                    overview: "Investigation brief",
+                    evidence: "Evidence review",
+                    trail: "Money trail",
+                    requests: "Customer requests",
+                    review: "Review & decision",
+                    delivery: "Delivery & follow-up",
+                    audit: "Case history",
+                  }[tab] || "Investigation brief"}
+                </h1>
                 <Status value={view.workflow.status} />
                 <Badge tone="warn">
                   {countdown == null

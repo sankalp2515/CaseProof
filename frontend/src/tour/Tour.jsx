@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowLeft, ArrowRight, Compass, LoaderCircle, X } from "lucide-react";
 import { go, useRoute } from "../router.js";
 import { apiRequest } from "../api/client.js";
@@ -145,8 +146,9 @@ function CaseTracker() {
 function ActiveTour({ state }) {
   const route = useRoute();
   const { persona } = useSession();
+  const [reportPhase, setReportPhase] = useState(null);
   const baseStep = STEPS[state.index];
-  const step =
+  let step =
     baseStep.id === "practice"
       ? {
           ...baseStep,
@@ -164,11 +166,30 @@ function ActiveTour({ state }) {
                 : "Select the recent large payment you want to report, then Continue. Payments are newest first.",
         }
       : baseStep;
+  if (baseStep.id === "evidence" && reportPhase === "review") {
+    step = {
+      ...baseStep,
+      title: "Review and submit your report",
+      target: '[data-tour="report-review"]',
+      action:
+        "Check your report and selected attachments, then Submit report. You can use Back in the form to make changes.",
+    };
+  }
+  if (baseStep.id === "evidence" && reportPhase === "submitted") {
+    step = {
+      ...baseStep,
+      title: "Your report is already submitted",
+      target: '[data-tour="complaint-reference"]',
+      action:
+        "Your submitted report is preserved. Continue to the analyst view, or restart the tour to file another report.",
+    };
+  }
   const [rect, setRect] = useState(null);
   const [missing, setMissing] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const [notice, setNotice] = useState("");
   const scrolled = useRef(false);
+  const lastTarget = useRef(null);
   const titleRef = useRef(null);
   const cardRef = useRef(null);
   const [height, setHeight] = useState(480);
@@ -226,14 +247,17 @@ function ActiveTour({ state }) {
         (advance.selector && !!document.querySelector(advance.selector)));
     // Only an action taken during this step advances it (Back must not bounce).
     const already = happened();
+    let advanced = false;
     setWaiting(!!step.advance && !already);
     const tick = () => {
+      if (advanced) return;
       if (!already && happened()) {
+        advanced = true;
         tour.next();
         return;
       }
       if (!step.target) return;
-      const target =
+      let target =
         step.id === "practice"
           ? location.hash.includes("/victim/start")
             ? '[data-tour="choose-your-demo-customer"]'
@@ -241,6 +265,38 @@ function ActiveTour({ state }) {
               ? '[data-tour="report-scam"]'
               : '[data-tour="report-payments"]'
           : step.target;
+      if (
+        step.id === "narrative" &&
+        document.querySelector('[data-tour="report-payments"]')
+      ) {
+        advanced = true;
+        tour.goTo(STEPS.findIndex((item) => item.id === "practice"));
+        return;
+      }
+      if (step.id === "evidence") {
+        if (document.querySelector('[data-tour="complaint-reference"]')) {
+          target = '[data-tour="complaint-reference"]';
+          setReportPhase("submitted");
+        } else {
+          const review = document.querySelector('[data-tour="report-review"]');
+          target = review
+            ? '[data-tour="report-review"]'
+            : '[data-tour="report-evidence"]';
+          setReportPhase(review ? "review" : "evidence");
+          if (
+            !review &&
+            document.querySelector('[data-tour="report-narrative"]')
+          ) {
+            advanced = true;
+            tour.goTo(STEPS.findIndex((item) => item.id === "narrative"));
+            return;
+          }
+        }
+      }
+      if (lastTarget.current !== target) {
+        lastTarget.current = target;
+        scrolled.current = false;
+      }
       const element = spotlightFor(target);
       if (!element) {
         setRect(null);
@@ -323,7 +379,19 @@ function ActiveTour({ state }) {
   const chapterStart = (chapter) =>
     STEPS.findIndex((candidate) => candidate.chapter === chapter);
 
-  if (minimised)
+  if (minimised) {
+    const slot = document.getElementById("victim-tour-slot");
+    if (slot)
+      return createPortal(
+        <button
+          className="btn sm"
+          aria-label={`Show guidance · ${state.index + 1} / ${STEPS.length}`}
+          onClick={() => setMinimised(false)}
+        >
+          Resume tour
+        </button>,
+        slot,
+      );
     return (
       <button
         className="btn primary tour-resume"
@@ -332,6 +400,7 @@ function ActiveTour({ state }) {
         Show guidance · {state.index + 1} / {STEPS.length}
       </button>
     );
+  }
   return (
     <>
       {rect && (
@@ -478,7 +547,19 @@ function ActiveTour({ state }) {
           <button
             className="btn sm"
             disabled={state.index === 0}
-            onClick={() => tour.back()}
+            onClick={() => {
+              if (
+                route === "/victim/report" &&
+                ["narrative", "evidence"].includes(step.id)
+              ) {
+                window.dispatchEvent(
+                  new CustomEvent("caseproof:report-back", {
+                    detail: step.id === "evidence" ? 1 : 0,
+                  }),
+                );
+              }
+              tour.back();
+            }}
           >
             <ArrowLeft size={13} /> Back
           </button>

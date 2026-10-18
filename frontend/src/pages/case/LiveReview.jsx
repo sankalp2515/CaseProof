@@ -45,6 +45,8 @@ export default function Review({ view, reload, stale }) {
     !action.busy &&
     !stale &&
     !["queued", "running", "failed"].includes(w.job?.status);
+  const alreadyApproved =
+    w.approval?.revision === s.revision && w.approval?.digest === s.digest;
   const perform = (fn) => action.run(fn).catch(() => {});
   async function decide() {
     const fresh = await loadCaseView(s.case_id, { persona });
@@ -181,7 +183,10 @@ export default function Review({ view, reload, stale }) {
             <button
               className="btn primary full"
               disabled={
-                !canReview || !reason.trim() || !w.urgent_referral.eligible
+                !canReview ||
+                !reason.trim() ||
+                !w.urgent_referral.eligible ||
+                !!pendingUrgent
               }
               onClick={() =>
                 setConfirm({
@@ -223,6 +228,7 @@ export default function Review({ view, reload, stale }) {
                 !canReview ||
                 !reason.trim() ||
                 !full ||
+                alreadyApproved ||
                 w.bank_data_refresh_required
               }
               onClick={() =>
@@ -243,7 +249,7 @@ export default function Review({ view, reload, stale }) {
                 ? "escalation"
                 : "complete handoff"}
             </button>
-            {w.approval && (
+            {alreadyApproved && (
               <div className="banner ok">
                 Current revision approved. Review destination delivery in
                 Delivery & follow-up.
@@ -262,6 +268,7 @@ export default function Review({ view, reload, stale }) {
               className="btn primary"
               disabled={
                 action.busy ||
+                !canReview ||
                 !canRequestRole(persona, "reviewer") ||
                 pendingUrgent.revision !== s.revision ||
                 stale

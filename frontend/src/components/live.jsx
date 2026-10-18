@@ -125,14 +125,15 @@ export function Modal({ title, children, onClose, footer }) {
     </div>
   );
 }
-export function SourceChip({ id, onSelect }) {
+export function SourceChip({ id, onSelect, caption }) {
   return (
     <button
       className="chip-cite"
       onClick={() => onSelect?.(id)}
-      title="Inspect source"
+      title={"Inspect source: " + id}
+      aria-label={"Inspect source: " + id}
     >
-      {id}
+      {caption || id}
     </button>
   );
 }

@@ -51,7 +51,7 @@ class Intake:
             if (
                 chosen
                 and chosen.state == "accepted"
-                and chosen.catalogue_id == "request_readable_receipt"
+                and chosen.catalogue_id in {"request_readable_receipt", "identify_receipt_payment"}
             ):
                 chosen.explanation.setdefault("replacement_artifact_ids", []).append(
                     artifact.artifact_id

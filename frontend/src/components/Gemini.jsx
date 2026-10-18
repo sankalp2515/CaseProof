@@ -13,8 +13,8 @@ const modelName = (m) =>
 function Provenance({ data }) {
   return (
     <p className="gemini-note">
-      <Sparkles size={12} /> Drafted by {modelName(data.model)} · every
-      sentence checked against its cited source
+      <Sparkles size={12} /> Drafted by {modelName(data.model)} · every sentence
+      checked against its cited source
       {data.dropped_unverified > 0 &&
         ` · ${data.dropped_unverified} unverifiable sentence(s) removed`}
     </p>
@@ -41,10 +41,14 @@ function Sentences({ rows, sources }) {
 
 export function useGeminiSummary(caseId, revision, persona) {
   const [state, setState] = useState({ loading: true });
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     const c = new AbortController();
-    // Keep the previous version's summary on screen while the new one drafts.
-    setState((old) => (old.data?.available ? { ...old, refreshing: true } : { loading: true }));
+    setState((old) =>
+      old.caseId === caseId && old.data?.available
+        ? { ...old, refreshing: true, error: null }
+        : { loading: true },
+    );
     apiRequest(
       `/v1/cases/${caseId}/genai/summary` +
         (revision != null ? `?revision=${revision}` : ""),
@@ -52,24 +56,34 @@ export function useGeminiSummary(caseId, revision, persona) {
     )
       .then((data) =>
         setState((old) =>
-          data?.available || !old.data?.available ? { data } : { data: old.data },
+          data?.available
+            ? { caseId, data, dataRevision: revision }
+            : old.caseId === caseId && old.data?.available
+              ? { ...old, refreshing: false }
+              : { caseId, data },
         ),
       )
-      .catch(
-        (e) =>
-          e.name !== "AbortError" &&
-          setState((old) => (old.data?.available ? { data: old.data } : { data: null })),
-      );
+      .catch((error) => {
+        if (error.name !== "AbortError")
+          setState((old) =>
+            old.caseId === caseId && old.data?.available
+              ? { ...old, refreshing: false, error }
+              : { caseId, error },
+          );
+      });
     return () => c.abort();
-  }, [caseId, revision, persona]);
-  return state;
+  }, [caseId, revision, persona, attempt]);
+  const displayed =
+    state.caseId && state.caseId !== caseId ? { loading: true } : state;
+  return { ...displayed, retry: () => setAttempt((n) => n + 1) };
 }
 
 export function GeminiSummary({ caseId, revision }) {
   const { persona } = useSession() || {};
-  const { loading, data } = useGeminiSummary(caseId, revision, persona);
+  const { loading, data, error, refreshing, dataRevision, retry } =
+    useGeminiSummary(caseId, revision, persona);
   const [copied, setCopied] = useState(false);
-  if (!loading && !data?.available) return null;
+  if (!loading && !data?.available && !error) return null;
   return (
     <Card className="gemini-card">
       <CardH
@@ -79,16 +93,38 @@ export function GeminiSummary({ caseId, revision }) {
         tour="gemini-summary"
       />
       <div className="card-b col gap12">
+        {error && (
+          <div className="banner warn" role="status">
+            <span>
+              The AI summary could not be loaded. The evidence and bank checks
+              remain available.
+            </span>
+            <button
+              className="btn sm"
+              disabled={refreshing || loading}
+              onClick={retry}
+            >
+              Retry summary
+            </button>
+          </div>
+        )}
+        {data?.available && dataRevision !== revision && (
+          <p className="banner info">
+            Showing summary version {dataRevision}. Current case version{" "}
+            {revision} still needs its own summary; use the current evidence for
+            decisions.
+          </p>
+        )}
         {loading ? (
           <p className="muted">Gemini is drafting from the verified facts…</p>
-        ) : (
+        ) : data?.available ? (
           <>
             <Sentences rows={data.summary} sources={data.sources} />
             {data.cybercrime_statement.length > 0 && (
               <details className="gemini-statement">
                 <summary>
-                  Draft cybercrime (NCRP) statement for the victim and
-                  receiving banks
+                  Draft cybercrime (NCRP) statement for the victim and receiving
+                  banks
                 </summary>
                 <Sentences
                   rows={data.cybercrime_statement}
@@ -96,12 +132,14 @@ export function GeminiSummary({ caseId, revision }) {
                 />
                 <button
                   className="btn sm"
+                  disabled={dataRevision !== revision}
                   onClick={() => {
                     navigator.clipboard
                       ?.writeText(
                         data.cybercrime_statement.map((r) => r.text).join(" "),
                       )
-                      .then(() => setCopied(true));
+                      .then(() => setCopied(true))
+                      .catch(() => setCopied(false));
                   }}
                 >
                   {copied ? <Check size={13} /> : <Copy size={13} />} Copy
@@ -111,7 +149,7 @@ export function GeminiSummary({ caseId, revision }) {
             )}
             <Provenance data={data} />
           </>
-        )}
+        ) : null}
       </div>
     </Card>
   );
@@ -119,8 +157,13 @@ export function GeminiSummary({ caseId, revision }) {
 
 export function GeminiStatement({ caseId, revision }) {
   const { persona } = useSession() || {};
-  const { data } = useGeminiSummary(caseId, revision, persona);
-  if (!data?.available || !data.cybercrime_statement.length) return null;
+  const { data, dataRevision } = useGeminiSummary(caseId, revision, persona);
+  if (
+    !data?.available ||
+    dataRevision !== revision ||
+    !data.cybercrime_statement.length
+  )
+    return null;
   return (
     <section className="packet-gemini">
       <b>Statement (AI-drafted, source-checked)</b>
