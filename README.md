@@ -1,20 +1,101 @@
+<div align="center">
+
 # CaseProof
 
-Evidence-grounded assistance for a bank's payment-scam response analyst.
+### A justified first response to a payment scam.
 
-CaseProof turns a new customer complaint into a cited investigation brief, checks
-it against bank records, identifies missing information, and prepares a reviewed
-handoff. Deterministic code controls money calculations, readiness, approval and
-delivery. The analyst remains accountable for the decision.
+Turn a customer's report, scattered evidence and bank records into a cited investigation brief, a visible money trail and a reviewer-approved handoff.
 
-## Try it
+**Built for bank fraud-response analysts. Powered by Google Cloud.**
 
-A synthetic staging deployment on Google Cloud (Mumbai) is live at
-**https://8-233-217-230.sslip.io**: choose **Take the guided tour**. No sign-in is
-needed; the analyst and reviewer roles are labelled demo personas confined to your
-own practice session.
+[**Try the live golden-hour tour →**](https://8-233-217-230.sslip.io/app/?tour=start#/victim/start) · [Explore the workflow](#from-first-report-to-reviewed-handoff) · [Run locally](#run-it-locally)
 
-## Run the complete local application
+Synthetic practice data · No sign-in required for the demo · Separate analyst and reviewer personas
+
+</div>
+
+<br>
+
+![CaseProof Money Trail: sourced account movements, transfer amounts and an interactive timeline](docs/media/analyst-layout/trail-fullscreen-1242.png)
+
+<p align="center"><em>Follow the bank-reported path of a disputed payment. Every case uses its own records; amounts and account counts change with the evidence.</em></p>
+
+## The first hour needs a clear next action
+
+A customer says someone from the bank told them to transfer money to a “safe account”. They have a receipt, a chat and a call log. Another debit might be related. The money has already moved onward.
+
+The analyst has to establish which payments belong to the complaint, reconcile the evidence with bank records, find the important gaps and prepare a defensible referral. The reviewer needs to know exactly what is being authorised.
+
+CaseProof brings that work into one investigation workspace. Start with the response window and recommended action. Verify a finding against its original source. Trace the disputed money. Ask the customer only for information still missing. Send the exact report an independent reviewer approved.
+
+## From first report to reviewed handoff
+
+| Step | What happens | Why it matters |
+| --- | --- | --- |
+| **1 · Report** | The customer selects their payments, explains what happened and attaches evidence. | The customer's account and the bank's ledger remain distinct. Extra debits are never disputed automatically. |
+| **2 · Prioritise** | The new complaint appears in the analyst queue with a bank-timed golden-hour signal. | Urgency comes from the payment timestamp, rather than a model's estimate. |
+| **3 · Investigate** | A brief connects findings to source evidence and bank matches. The Money Trail shows reported onward movements. | The analyst can inspect the basis for an action instead of trusting an unexplained summary. |
+| **4 · Clarify** | The analyst sends a focused request. The customer answers through an expiring, scoped reply link. | New information produces a new assessment; old approvals cannot silently carry forward. |
+| **5 · Review** | A separate reviewer checks readiness, writes a rationale and approves the current revision and digest. | Investigation and authorisation stay separate. |
+| **6 · Handoff** | The approved packet goes to two synthetic receivers. A named owner and next action remain on the case. | Both acknowledgements and follow-up are visible. Sending is not mistaken for resolution. |
+
+## See the evidence behind the decision
+
+### A brief you can check
+
+Read the supported findings, matched payments and unresolved matters together. Open a citation to inspect the original evidence. Customer statements, extracted details and bank verification keep their own meaning.
+
+### A money trail you can inspect
+
+Follow each confirmed disputed debit through the reported account network. Inspect transfer times, source records and observation limits. Replay shows the recorded sequence without inventing historical balances.
+
+### Questions with a purpose
+
+Send a proposed request for an unresolved gap, rather than asking for facts the bank already has. Preserve the customer's reply, uploaded evidence and the assessment it changes.
+
+### Approval tied to what was reviewed
+
+Approve the current revision and digest with a written reason. A later evidence or bank-data change requires a fresh review. Track both delivery acknowledgements and the next person responsible.
+
+## The output: an investigation report someone can act on
+
+The analyst's deliverable is a **source-linked payment-scam investigation report**, backed by a reviewed case snapshot. It includes the payment inventory, supported findings, unresolved information, traced money movements and source references. Delivery preserves the approved packet and its history.
+
+Open **Delivery & follow-up → View delivered report** to inspect the readable, printable document. The case stays open for receiving-bank responses, with an owner and next action.
+
+**Delivery does not mean a freeze, refund, regulatory filing or closed investigation.** The demo receivers acknowledge synthetic packets; they do not move or recover real funds.
+
+## Try a fresh golden-hour case
+
+[**Start the guided demonstration →**](https://8-233-217-230.sslip.io/app/?tour=start#/victim/start)
+
+1. Choose **10 minutes ago** and start a fresh practice session.
+2. Select a customer marked with a suspicious payment. Report that payment, describe the scam and upload a receipt, chat or call log.
+3. Continue as analyst. Inspect the alert, brief, source evidence and Money Trail.
+4. Resolve the case's missing information and explicitly confirm or exclude additional payments.
+5. Switch to reviewer when the case is ready. Approve the current version, send the packet and verify both acknowledgements.
+6. Return to analyst, save follow-up ownership and inspect the delivered report.
+
+Each session generates a fictional bank, customers, payments and downstream observations. Choose **10 minutes**, **40 minutes** or **2 hours ago** to compare response priority. The complaint, evidence processing, assessment, review and delivery run through the backend; the demo does not replay a fixed completed case.
+
+Use fictional information only. Stay in the same browser to keep the victim and staff views in the same practice session. See the [complete demonstration guide](docs/GOLDEN_HOUR_DEMO_AND_RELEASE_CHECK.md) for the detailed path and recovery checks.
+
+## AI assistance. Explicit decision controls.
+
+Google Cloud provides the deployed runtime and evidence-processing services. Document AI reads uploaded images; Gemini on Vertex AI supports evidence interpretation and investigation assistance. Backend code owns financial calculations, money allocations, readiness and revision checks. A human reviewer authorises the handoff.
+
+| Capability | Google Cloud runtime |
+| --- | --- |
+| React frontend, workflow API and private worker | Cloud Run, behind a shared HTTPS origin |
+| Image OCR and AI assistance | Document AI and Vertex AI Gemini |
+| Evidence and immutable exported packets | Cloud Storage |
+| Case state, revisions, approvals and audit | Firestore Native |
+| Synthetic bank records and downstream observations | BigQuery |
+| Durable background work and reconciliation | Cloud Tasks and Cloud Scheduler |
+
+The public deployment is a **synthetic staging prototype**, not a production bank integration. Its labelled demo personas are scoped to the visitor's practice session. Production staff sign-in, institutional integrations and operational controls require separate validation. See [architecture](docs/ARCHITECTURE.md), [security](docs/SECURITY.md) and [deployment details](docs/DEPLOYMENT.md).
+
+## Run it locally
 
 Requires Docker Desktop in Linux-container mode. No cloud credentials are needed.
 
@@ -22,86 +103,47 @@ Requires Docker Desktop in Linux-container mode. No cloud credentials are needed
 docker compose up --build -d --wait
 ```
 
-Open **http://127.0.0.1:8080/app/#/entry**. Compose starts independent services
-on one `caseproof` network; only the frontend publishes a port (host loopback):
+Open [the local application](http://127.0.0.1:8080/). Initial startup prepares synthetic bank records and creates no complaints. Local evidence processing uses Tesseract and explicit extraction rules; cloud AI features depend on the selected provider configuration.
 
-| Service | Role | Data |
+<details>
+<summary><strong>Local services and data</strong></summary>
+
+| Service | Responsibility | Persistent data |
 | --- | --- | --- |
-| `frontend` | nginx serving the React build; proxies API paths to `api` | none |
-| `api` | FastAPI workflow API, customer links, readiness | `application-data` |
-| `worker` | Durable job processing, bank observations, outbound delivery | `application-data` |
-| `ocr` | Real Tesseract OCR over HTTP | none |
+| `frontend` | Nginx serves React and proxies API requests | None |
+| `api` | FastAPI workflow API, customer sessions and readiness | `application-data` |
+| `worker` | Jobs, bank observations and outbound delivery | `application-data` |
+| `ocr` | Tesseract image OCR | None |
 | `trail-feed` | Independent synthetic downstream-bank feed | `feed-data` |
 | `simulator` | Two idempotent synthetic report receivers | `simulator-data` |
-| `preload` | One-shot synthetic bank preload, then exits | `application-data` |
+| `preload` | One-shot fictional bank preload | `application-data` |
 
-Initial startup preloads fictional bank records; it creates **no complaints**.
-Never use real customer information.
+Only the frontend publishes a port, bound to host loopback. Stop with `docker compose stop`; resume with `docker compose up -d`. Removing volumes discards local investigation data.
 
-Stop with `docker compose stop`; resume with `docker compose up -d`. Do not use
-`down -v` unless deliberately discarding all local investigation data.
+</details>
 
-## Guided demo tour
+## Explore the implementation
 
-New visitors can choose **Take the guided tour** on the entry page (or **Tour** in
-any header). It follows one synthetic "golden hour" scam, a fake bank-officer call
-at 10:02 that leads to a payment into a "safe account", from the victim's report
-to the fraud desk's reviewed handoff. The tour spotlights each analyst component
-that is not self-explanatory and says what it means and why it exists. It
-auto-advances when the visitor performs the step, resumes after a reload, and can
-jump straight to any analyst chapter. Source: `frontend/src/tour/`.
+| Start here | What you will find |
+| --- | --- |
+| [Frontend](frontend/) | React/Vite application, source inspection, graph presentation and UI tests |
+| [Workflow and domain](caseproof/) | Financial rules, readiness, approvals, jobs and storage adapters |
+| [API contract](docs/API_WORKFLOW_CONTRACT.md) | Payload semantics, roles, revisions and recovery invariants |
+| [Testing](docs/TESTING.md) | Regression coverage, evaluation methods and known limits |
+| [Golden-hour verification](docs/GOLDEN_HOUR_DEMO_AND_RELEASE_CHECK.md) | Reproducible demonstration and recorded local UI checks |
+| [Google infrastructure](infra/google/) | Cloud runtime, service boundaries and deployment gates |
+| [Backlog](BACKLOG.md) | Remaining product and operational work |
 
-## Practice scenarios
+The older `/inspector` interface is available for local technical diagnostics. The React application is the primary product experience.
 
-Every practice session generates its own synthetic bank: distinct customers, varied
-amounts, a scam payment and downstream mule movements. The tester chooses **when
-the scam happened** (10 min, 40 min or 2 h ago), so cases inside and outside the
-golden hour can both be tried; nothing is replayed from a fixed case. The end
-product, the reviewer-approved report sent to the bank case system and the
-cybercrime-report receiver, opens as a readable, printable document under
-**Delivery & follow-up → View delivered report**.
+---
 
-## Evaluate a new complaint
+<div align="center">
 
-Follow the [step-by-step demo](docs/DEMO.md): select a synthetic customer, dispute
-a payment, write a narrative, upload a real image, and submit. Review the new case,
-request missing information, answer through its scoped link, review citations,
-approve as a reviewer, and send to both local report receivers. Delivery creates a
-follow-up state; it does not close the investigation or freeze funds.
+**Follow one complaint all the way to its reviewed output.**
 
-## Architecture and boundaries
+[**Try CaseProof →**](https://8-233-217-230.sslip.io/app/?tour=start#/victim/start)
 
-| Component | Local implementation | Prepared Google implementation |
-| --- | --- | --- |
-| Analyst and victim workflows | `frontend` (nginx + React) in front of `api` (FastAPI) | Separate frontend and API Cloud Run services behind one HTTPS load balancer |
-| Evidence interpretation | Tesseract plus explicit local extraction rules | Document AI plus Gemini on Vertex AI |
-| Evidence storage | Private filesystem | Cloud Storage quarantine/clean buckets |
-| Case history, approvals, work | SQLite with revision/digest/lease checks | Firestore Native and Cloud Tasks |
-| Bank records and trace | Synthetic records in DuckDB; independent feed | Bounded BigQuery analytics |
-| Report destinations | Idempotent synthetic receivers | Separately authenticated hosted simulators |
+Built by **BuildtoChange** · [MIT License](LICENSE)
 
-The local extractor is **not a live generative model**. Synthetic records are
-inputs, not pre-recorded case decisions. The Google adapters and infrastructure
-are deployed to a synthetic staging environment and pass a live end-to-end run
-(real Document AI and Gemini to both simulated receivers). The local Compose stack uses SQLite and
-DuckDB on shared volumes; it is a demonstration topology, not a bank production one.
-
-## Repository
-
-- `frontend/` — React source, dependency lock and UI tests.
-- `caseproof/` — domain rules, workflow API and local/cloud adapters.
-- `local_services/`, `mock_services/` — OCR, worker and synthetic services.
-- `policy/` — versioned fictional decision policy.
-- `tests/`, `eval/` — regression tests and repeatable quality/load evaluations.
-- `infra/google/` — Google configuration and deployment gates.
-- `docs/` — demo, architecture, validation and security guidance.
-
-The older `/inspector` diagnostic interface remains available for local technical
-inspection; it is not the primary product interface.
-
-See [architecture](docs/ARCHITECTURE.md), [API contract](docs/API_WORKFLOW_CONTRACT.md),
-[testing](docs/TESTING.md), [security](docs/SECURITY.md),
-[cloud readiness](docs/CLOUD_READINESS.md), [deployment preparation](docs/DEPLOYMENT.md),
-[native dependency risk](docs/NATIVE_DEPENDENCY_RISK.md), and the [prioritized backlog](BACKLOG.md).
-
-Licensed under [MIT](LICENSE).
+</div>
