@@ -13,3 +13,5 @@ createRoot(document.getElementById("root")).render(
   </SessionProvider>,
 );
 import "./quality.css";
+
+import "./pages/victim/victim-premium.css";
