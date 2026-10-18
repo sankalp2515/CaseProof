@@ -1,0 +1,428 @@
+{
+  "localOnly": true,
+  "unit": {
+    "passed": 85,
+    "failed": 0
+  },
+  "acceptance": {
+    "checks": [
+      "Fresh practice has no fabricated complaints",
+      "New complaint 1 submitted with a supported receipt",
+      "Real worker assessed complaint 1",
+      "Urgent eligibility is separate from incomplete full handoff",
+      "New complaint arrives automatically in analyst queue",
+      "Arrival notification visible to analyst",
+      "Case next action precedes investigation content",
+      "Brief precedes optional AI tools",
+      "Readable fact citation selects the original source",
+      "Fractional paisa correction is blocked",
+      "Reviewer can inspect evidence but cannot correct it",
+      "Identity switches do not create duplicate unread arrivals",
+      "Backend trail rendered as account graph",
+      "Request recommendation is separated from history",
+      "No ambiguous generic customer shortcut",
+      "Reviewer cannot send analyst clarification",
+      "Actual missing-information link reply received",
+      "Reply creates a new assessment revision",
+      "Additional debit explicitly denied",
+      "Analyst reviewer-only control disabled",
+      "Explicit handoff switches to reviewer for this case",
+      "Both simulator acknowledgements recorded",
+      "Delivered report readable as a document",
+      "Owner and awaiting_external follow-up saved",
+      "Follow-up survives reload",
+      "New complaint 2 submitted with a supported receipt",
+      "Real worker assessed complaint 2",
+      "Urgent eligibility is separate from incomplete full handoff",
+      "New complaint arrives automatically in analyst queue",
+      "Arrival notification visible to analyst",
+      "Case next action precedes investigation content",
+      "Brief precedes optional AI tools",
+      "Readable fact citation selects the original source",
+      "Fractional paisa correction is blocked",
+      "Reviewer can inspect evidence but cannot correct it",
+      "Identity switches do not create duplicate unread arrivals",
+      "Backend trail rendered as account graph",
+      "Request recommendation is separated from history",
+      "No ambiguous generic customer shortcut",
+      "Reviewer cannot send analyst clarification",
+      "Actual missing-information link reply received",
+      "Reply creates a new assessment revision",
+      "Additional debit explicitly denied",
+      "Analyst reviewer-only control disabled",
+      "Explicit handoff switches to reviewer for this case",
+      "Both simulator acknowledgements recorded",
+      "Delivered report readable as a document",
+      "Owner and awaiting_external follow-up saved",
+      "Follow-up survives reload",
+      "Victim no body overflow at 390",
+      "Victim no body overflow at 768",
+      "Analyst no body overflow at 1280",
+      "Analyst no body overflow at 1440",
+      "overview has no body overflow at 390",
+      "evidence has no body overflow at 390",
+      "requests has no body overflow at 390",
+      "review has no body overflow at 390",
+      "delivery has no body overflow at 390",
+      "overview has no body overflow at 768",
+      "evidence has no body overflow at 768",
+      "requests has no body overflow at 768",
+      "review has no body overflow at 768",
+      "delivery has no body overflow at 768",
+      "overview has no body overflow at 1280",
+      "evidence has no body overflow at 1280",
+      "requests has no body overflow at 1280",
+      "review has no body overflow at 1280",
+      "delivery has no body overflow at 1280",
+      "overview has no body overflow at 1440",
+      "evidence has no body overflow at 1440",
+      "requests has no body overflow at 1440",
+      "review has no body overflow at 1440",
+      "delivery has no body overflow at 1440",
+      "At least one new case completed a full reviewed handoff",
+      "No uncaught browser errors"
+    ],
+    "cases": [
+      "CASE-f08deda3eeef3bac",
+      "CASE-4ac6dee704f69018"
+    ],
+    "pageErrors": [],
+    "audits": [
+      {
+        "screen": "overview",
+        "violations": []
+      },
+      {
+        "screen": "evidence",
+        "violations": []
+      },
+      {
+        "screen": "trail",
+        "violations": []
+      },
+      {
+        "screen": "requests",
+        "violations": []
+      },
+      {
+        "screen": "reviewer",
+        "violations": []
+      },
+      {
+        "screen": "delivery",
+        "violations": []
+      },
+      {
+        "screen": "overview",
+        "violations": []
+      },
+      {
+        "screen": "evidence",
+        "violations": []
+      },
+      {
+        "screen": "trail",
+        "violations": []
+      },
+      {
+        "screen": "requests",
+        "violations": []
+      },
+      {
+        "screen": "reviewer",
+        "violations": []
+      },
+      {
+        "screen": "delivery",
+        "violations": []
+      },
+      {
+        "screen": "victim-390",
+        "violations": []
+      },
+      {
+        "screen": "victim-768",
+        "violations": []
+      },
+      {
+        "screen": "queue-1280",
+        "violations": []
+      },
+      {
+        "screen": "queue-1440",
+        "violations": []
+      },
+      {
+        "screen": "overview-390",
+        "violations": []
+      },
+      {
+        "screen": "evidence-390",
+        "violations": []
+      },
+      {
+        "screen": "requests-390",
+        "violations": []
+      },
+      {
+        "screen": "review-390",
+        "violations": []
+      },
+      {
+        "screen": "delivery-390",
+        "violations": []
+      },
+      {
+        "screen": "overview-768",
+        "violations": []
+      },
+      {
+        "screen": "evidence-768",
+        "violations": []
+      },
+      {
+        "screen": "requests-768",
+        "violations": []
+      },
+      {
+        "screen": "review-768",
+        "violations": []
+      },
+      {
+        "screen": "delivery-768",
+        "violations": []
+      },
+      {
+        "screen": "overview-1280",
+        "violations": []
+      },
+      {
+        "screen": "evidence-1280",
+        "violations": []
+      },
+      {
+        "screen": "requests-1280",
+        "violations": []
+      },
+      {
+        "screen": "review-1280",
+        "violations": []
+      },
+      {
+        "screen": "delivery-1280",
+        "violations": []
+      },
+      {
+        "screen": "overview-1440",
+        "violations": []
+      },
+      {
+        "screen": "evidence-1440",
+        "violations": []
+      },
+      {
+        "screen": "requests-1440",
+        "violations": []
+      },
+      {
+        "screen": "review-1440",
+        "violations": []
+      },
+      {
+        "screen": "delivery-1440",
+        "violations": []
+      }
+    ],
+    "providers": [
+      [
+        {
+          "mode": "local",
+          "provider": "tesseract",
+          "model_id": "tesseract-eng-hin-bounded-v5",
+          "prompt_hash": "",
+          "schema_version": "1",
+          "input_digest": "1cf7894131afe5d3a618f06206c7485f6b9eae58a4c6f380082cd2a1b76b2be1",
+          "latency_ms": 9032.47928500059,
+          "tokens_in": 0,
+          "tokens_out": 0
+        },
+        {
+          "mode": "local",
+          "provider": "local-rules",
+          "model_id": "local-literal-rules-v2",
+          "prompt_hash": "",
+          "schema_version": "1",
+          "input_digest": "5c615a5aefe3765887615a664eab5842c9d1bca0b238530b87e7dac67ec5620a",
+          "latency_ms": 1.083877999917604,
+          "tokens_in": 0,
+          "tokens_out": 0
+        }
+      ],
+      [
+        {
+          "mode": "local",
+          "provider": "local-rules",
+          "model_id": "local-literal-rules-v2",
+          "prompt_hash": "",
+          "schema_version": "1",
+          "input_digest": "1d4e9f6df1a192ea3093f059441aa2311c41819e7d0a11465d5987af7727388f",
+          "latency_ms": 1.1608570002863416,
+          "tokens_in": 0,
+          "tokens_out": 0
+        }
+      ]
+    ],
+    "decisionStages": [
+      {
+        "caseId": "CASE-f08deda3eeef3bac",
+        "stage": "before clarification",
+        "revision": 7,
+        "readiness": "REVIEW_REQUIRED",
+        "urgentReferral": {
+          "eligible": true,
+          "transaction_ids": [
+            "SIM-00D8655470-T1"
+          ],
+          "reason": "Identified disputed bank debit; narrative and downstream trail are separate."
+        },
+        "unknowns": [
+          "all_transfers_accounted"
+        ],
+        "nextAction": {
+          "owner": "fraud_analyst",
+          "action": "Request missing customer information",
+          "request_id": "REQ-confirm_additional_transfer",
+          "reason": "Please confirm whether the additional debit belongs to this complaint and, if available, share the relevant call-log crop."
+        }
+      },
+      {
+        "caseId": "CASE-f08deda3eeef3bac",
+        "stage": "after clarification and review",
+        "revision": 14,
+        "readiness": "COMPLETE_CANDIDATE",
+        "deliveredKinds": [
+          "cfcfrms_report_update",
+          "case_ticket"
+        ]
+      },
+      {
+        "caseId": "CASE-4ac6dee704f69018",
+        "stage": "before clarification",
+        "revision": 7,
+        "readiness": "REVIEW_REQUIRED",
+        "urgentReferral": {
+          "eligible": true,
+          "transaction_ids": [
+            "SIM-09A46C7798-T1"
+          ],
+          "reason": "Identified disputed bank debit; narrative and downstream trail are separate."
+        },
+        "unknowns": [
+          "all_transfers_accounted"
+        ],
+        "nextAction": {
+          "owner": "fraud_analyst",
+          "action": "Request missing customer information",
+          "request_id": "REQ-confirm_additional_transfer",
+          "reason": "Please confirm whether the additional debit belongs to this complaint and, if available, share the relevant call-log crop."
+        }
+      },
+      {
+        "caseId": "CASE-4ac6dee704f69018",
+        "stage": "after clarification and review",
+        "revision": 14,
+        "readiness": "COMPLETE_CANDIDATE",
+        "deliveredKinds": [
+          "cfcfrms_report_update",
+          "case_ticket"
+        ]
+      }
+    ],
+    "provider": "local (real isolated worker/OCR/simulators)",
+    "cloudLive": false
+  },
+  "tour": {
+    "checks": [
+      "Search is a single aligned control at 1242",
+      "Identity caption and select share a left edge",
+      "Search is a single aligned control at 627",
+      "Search is a single aligned control at 390",
+      "Cases is an all-session history register, not duplicate KPIs",
+      "Tour keeps the landing destination",
+      "Tour 1 actions inside 668px viewport",
+      "Tour 2 actions inside 668px viewport",
+      "Tour cannot jump past incomplete intake",
+      "Tour footer accessible at 627x668",
+      "Tour footer accessible at 390x668",
+      "Tour footer accessible at 1242x400",
+      "Selected scam victim has compact bank-backed practice payee",
+      "Payment selector describes newest-first ordering",
+      "Tour 3 actions inside 668px viewport",
+      "After-payment contact time requires explicit confirmation",
+      "Tour 4 actions inside 668px viewport",
+      "AI example option matches the configured provider",
+      "Only receipt shows generation progress",
+      "chat keeps its label while receipt generates",
+      "call log keeps its label while receipt generates",
+      "Only chat shows generation progress",
+      "receipt keeps its label while chat generates",
+      "call log keeps its label while chat generates",
+      "Only call log shows generation progress",
+      "receipt keeps its label while call log generates",
+      "chat keeps its label while call log generates",
+      "Review remains a valid tour stage after the old warning timeout",
+      "Guidance follows Back from Review to Evidence",
+      "Tour 3 actions inside 668px viewport",
+      "Tour Back opens the narrative without losing it",
+      "Tour 4 actions inside 668px viewport",
+      "Tour 5 actions inside 668px viewport",
+      "Back after submission preserves the report instead of seeking an absent form",
+      "Tour 5 actions inside 668px viewport",
+      "Analyst handoff is highlighted in the header",
+      "Victim receipt no longer contains a staff handoff button",
+      "Dismissing the hint keeps the header handoff available",
+      "Golden-hour case triggers reference-style alert on open analyst queue",
+      "Bank-selected alert amount is sourced before OCR",
+      "First contact does not replace the bank debit clock",
+      "Tour 6 actions inside 668px viewport",
+      "New realistic handle survives actual OCR and matching",
+      "Role distinction is visible without opening a separate guide",
+      "Tour 7 actions inside 668px viewport",
+      "Tour 8 actions inside 668px viewport",
+      "Tour 9 actions inside 668px viewport",
+      "Tour 10 actions inside 668px viewport",
+      "Analyst cannot approve the handoff",
+      "Tour 11 actions inside 668px viewport",
+      "Guided case reaches both actual simulator acknowledgements",
+      "Tour 12 actions inside 668px viewport",
+      "Tour Finish requires the actual completed handoff and ownership",
+      "Tour ends after real handoff without uncaught UI errors"
+    ],
+    "audits": [
+      {
+        "name": "case-register",
+        "violations": []
+      },
+      {
+        "name": "practice-evidence",
+        "violations": []
+      },
+      {
+        "name": "report-handoff-header",
+        "violations": []
+      },
+      {
+        "name": "report-handoff-mobile",
+        "violations": []
+      },
+      {
+        "name": "golden-hour-alert",
+        "violations": []
+      }
+    ],
+    "errors": [],
+    "caseId": "CASE-bc3dc2a29dd1d1cd",
+    "providers": "Tesseract + local rules; samples bank-simulator",
+    "liveGoogle": false
+  }
+}

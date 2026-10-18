@@ -526,7 +526,8 @@ const ALL_STEPS = [
     body: [
       "Click Investigate with Gemini. An AI agent decides which checks to run (ledger, other complaints about the same payee, the money trail, how fresh our bank records are), runs them and reports findings that point to each check. It can look, never change the case.",
     ],
-    action: "Optional: click Investigate with Gemini and open a step's results.",
+    action:
+      "Optional: click Investigate with Gemini and open a step's results.",
   },
   {
     id: "finish",
@@ -539,17 +540,14 @@ const ALL_STEPS = [
   },
 ];
 
-// Fifteen decision points. Ordinary controls remain discoverable outside the tour.
+// Twelve decision points. Ordinary controls remain discoverable outside the tour.
 const HIGHLIGHTS = [
   "intro",
   "practice",
   "narrative",
   "evidence",
   "registered",
-  "urgency",
-  "ai-summary",
-  "work-done",
-  "investigator",
+  "brief",
   "originals",
   "graph",
   "engine",
@@ -566,6 +564,7 @@ export const STEPS = HIGHLIGHTS.map((id) => {
       needsCase: true,
       body: [
         ...step.body,
+        "Start with the next-action banner, summary and bank-matched payments. Additional tools below include the source-checked Gemini summary and on-demand investigator. Assessment methods are expandable.",
         "Work as Analyst demo to inspect evidence and request clarification. Switch to Reviewer demo only for the independent approval of the current revision. The bank applies this separation so the investigator cannot authorise their own handoff.",
       ],
     };
@@ -579,18 +578,19 @@ export const STEPS = HIGHLIGHTS.map((id) => {
     return {
       ...step,
       body: [
-        "Where the money went, from the receiving banks' own reports. Watch it move: as time passes, mules withdraw cash at ATMs and that money leaves the banking system for good. Click an account to see which bank reported it and when.",
+        "Follow the bank-reported path of each disputed payment. Select an account to see its source and observation time. Observed availability is time-bound; it is not a confirmed hold or recovery.",
       ],
     };
   if (id === "readiness")
     return {
       ...step,
+      target: at("case-next-action"),
       body: [
         "The bank's rules, not the AI, decide when a report is ready: an urgent referral can go early, a complete report needs every required fact. Ticks show what is settled; warnings show what is still missing.",
         "Only the Reviewer can approve, with a written reason, and only the exact version on screen. Switch to Reviewer demo from the identity menu at the top right.",
       ],
       action:
-        "Look at what is settled. When the case is ready, switch to Reviewer demo and approve it.",
+        "Follow the role named in the next-action banner. Use Continue as reviewer demo for an eligible complete handoff, or the separately labelled urgent-referral option. Missing customer information still belongs with the analyst.",
     };
   if (id === "delivery")
     return {
@@ -616,7 +616,7 @@ export const STEPS = HIGHLIGHTS.map((id) => {
     return {
       ...step,
       body: [
-        "10:02. A caller posing as the bank's fraud team talks a customer into sending money to a \"safe account\". By 10:10 the money is moving through mule accounts at other banks, and some is withdrawn at an ATM.",
+        '10:02. A caller posing as the bank\'s fraud team talks a customer into sending money to a "safe account". By 10:10 the money is moving through mule accounts at other banks, and some is withdrawn at an ATM.',
         "The first hour, the golden hour, is when banks can still ask for that money to be held. You will report the scam as the customer, then work it as the fraud desk, and see what the system does in seconds that normally takes an analyst an hour. Everything here is synthetic.",
       ],
     };

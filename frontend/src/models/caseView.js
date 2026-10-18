@@ -10,11 +10,16 @@ export function remaining(minutes) {
   const seconds = Math.max(0, Math.floor(minutes * 60));
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
-export function remainingAt(clock,now=Date.now()) {
-  if(clock?.golden_hour_remaining==null)return null;
-  if(clock.replay)return clock.golden_hour_remaining;
-  const sampled=Date.parse(clock.as_of);
-  return Number.isFinite(sampled)?Math.max(0,clock.golden_hour_remaining-Math.max(0,now-sampled)/60000):null;
+export function remainingAt(clock, now = Date.now()) {
+  if (clock?.golden_hour_remaining == null) return null;
+  if (clock.replay) return clock.golden_hour_remaining;
+  const sampled = Date.parse(clock.as_of);
+  return Number.isFinite(sampled)
+    ? Math.max(
+        0,
+        clock.golden_hour_remaining - Math.max(0, now - sampled) / 60000,
+      )
+    : null;
 }
 export const time = (value) =>
   value
@@ -49,6 +54,7 @@ const PLAIN = {
   txn_datetime: "Payment time",
   payee_vpa: "Payee UPI ID",
   transaction_reference: "Transaction reference (UTR)",
+  receipt_association: "Match the receipt to the selected bank payment",
   ledger_coverage: "Bank records up to date",
   bank_verified: "Confirmed in bank records",
   deception_account: "How the scam happened",

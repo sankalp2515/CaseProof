@@ -81,7 +81,7 @@ it("covers every analyst tab and finishes on a summary", () => {
       tab,
     ).toBe(true);
   expect(STEPS.at(-1).id).toBe("finish");
-  expect(STEPS.length).toBeLessThanOrEqual(15);
+  expect(STEPS.length).toBeLessThanOrEqual(12);
 });
 
 it("opens at the golden-hour introduction and moves forward and back", () => {

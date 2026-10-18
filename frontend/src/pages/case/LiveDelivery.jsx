@@ -95,6 +95,7 @@ export default function Delivery({ view, reload, stale }) {
                 disabled={
                   !canRequestRole(persona, "reviewer") ||
                   !w.approval ||
+                  ["queued", "running", "failed"].includes(w.job?.status) ||
                   w.bank_data_refresh_required ||
                   stale ||
                   action.busy
@@ -344,13 +345,19 @@ export default function Delivery({ view, reload, stale }) {
                 disabled={
                   action.busy ||
                   stale ||
+                  !canRequestRole(persona, "reviewer") ||
+                  ["queued", "running", "failed"].includes(w.job?.status) ||
                   confirm.revision !== s.revision ||
                   confirm.digest !== s.digest
                 }
                 onClick={() =>
                   run(async () => {
                     const fresh = await loadCaseView(s.case_id, { persona });
-                    if (fresh.identity.digest !== confirm.digest)
+                    if (
+                      fresh.identity.digest !== confirm.digest ||
+                      fresh.identity.revision !== confirm.revision ||
+                      !fresh.workflow.approval
+                    )
                       throw new Error(
                         "Assessment changed. Review the new revision.",
                       );

@@ -67,13 +67,16 @@ async function axe(page, name) {
 async function stage(n) {
   await p
     .locator(".tour-count")
-    .getByText(n + " / 15", { exact: true })
+    .getByText(n + " / 12", { exact: true })
     .waitFor({ timeout: 30000 });
   if (process.env.TOUR_SHOTS) {
     // Opt-in review aid: what the visitor reads and sees at each highlight.
     await p.waitForTimeout(1200);
     await p.screenshot({ path: out + "tour-step-" + n + ".png" });
-    const card = await p.locator(".tour-body").innerText().catch(() => "");
+    const card = await p
+      .locator(".tour-body")
+      .innerText()
+      .catch(() => "");
     console.log("STEP", n, JSON.stringify(card.replace(/\s+/g, " ")));
   }
   const box = await p.locator(".tour-footer").boundingBox();
@@ -477,21 +480,17 @@ try {
       .isVisible(),
   );
   await restore();
-  // Overview highlights: Gemini summary, work done, Gemini investigator.
-  for (const n of [7, 8, 9]) {
-    await p.getByRole("button", { name: /^Next/ }).click();
-    await stage(n);
-  }
+
   await p.getByRole("button", { name: /^Next/ }).click();
-  await stage(10);
+  await stage(7);
   await p.getByRole("button", { name: /^Next/ }).click();
-  await stage(11);
+  await stage(8);
   await minimise();
   await p.locator(".trail-node").nth(3).waitFor();
   await shot(p, "guided-money-trail");
   await restore();
   await p.getByRole("button", { name: /^Next/ }).click();
-  await stage(12);
+  await stage(9);
   await minimise();
   await answers.goto(base + `/app/#/victim/complaints/${cid}`);
   const deny = answers.getByRole("button", {
@@ -506,7 +505,7 @@ try {
   await settled(cid);
   await restore();
   await p.getByRole("button", { name: /^Next/ }).click();
-  await stage(13);
+  await stage(10);
   await minimise();
   await p
     .getByRole("textbox", { name: "Reviewer rationale", exact: true })
@@ -533,7 +532,7 @@ try {
   await p.getByRole("button", { name: /Approve revision / }).click();
   await restore();
   await p.getByRole("button", { name: /^Next/ }).click();
-  await stage(14);
+  await stage(11);
   await minimise();
   await p
     .getByRole("button", {
@@ -567,7 +566,7 @@ try {
   await p.getByRole("button", { name: "Save follow-up", exact: true }).click();
   await restore();
   await p.getByRole("button", { name: /^Next/ }).click();
-  await stage(15);
+  await stage(12);
   await p.getByRole("button", { name: "Finish", exact: true }).waitFor();
   await p.waitForFunction(() =>
     Array.from(document.querySelectorAll(".tour-footer button")).some(
