@@ -1,0 +1,426 @@
+/* Keep the investigation canvas prominent within the accepted Studio design. */
+.studio-app .case-next-step {
+  padding: 12px 16px;
+  gap: 10px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+.studio-app .case-next-step h2 {
+  font-size: 15px;
+  line-height: 1.35;
+  margin: 3px 0 4px;
+}
+.studio-app .case-next-step > .btn {
+  min-height: 34px;
+  font-size: 12px;
+}
+.studio-app .case-next-step .case-next-icon {
+  padding-top: 0;
+}
+.next-action-detail {
+  font-size: 11px;
+  color: #465c53;
+}
+.next-action-detail summary {
+  cursor: pointer;
+  width: fit-content;
+}
+.next-action-detail p {
+  padding-top: 6px;
+}
+.studio-app .case-next-step .urgent-review-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  border: 0;
+  padding: 0;
+  margin-top: 6px;
+  font-size: 11px;
+}
+.studio-app .case-next-step .urgent-review-note .linklike {
+  font-size: 11px;
+}
+.studio-app .case-priority-row {
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.studio-app .case-priority-row > .case-next-step > .btn {
+  margin-left: 0;
+}
+.studio-app .case-golden-hour .card-h {
+  padding: 12px 14px 0;
+}
+.studio-app .case-golden-hour .card-b {
+  padding: 8px 14px 12px;
+}
+.golden-hour-body {
+  gap: 12px;
+}
+.golden-hour-body .ring-wrap strong {
+  font-size: 18px;
+}
+.golden-hour-body p {
+  margin: 3px 0;
+}
+.studio-app .analyst-overview-top {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 16px;
+}
+.studio-app .analyst-overview-top .card-h {
+  padding: 16px 18px 0;
+}
+.studio-app .analyst-overview-top .card-b {
+  padding: 16px 18px;
+}
+.studio-app .brief-summary {
+  font-size: 20px;
+  line-height: 1.45;
+  margin: 0 0 14px;
+}
+.reported-details {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.reported-details > summary {
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.reported-details .chip-cite {
+  display: block;
+  margin-top: 8px;
+}
+.brief-limitations {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 11px;
+  color: #646b78;
+  line-height: 1.6;
+  margin: 14px 0 0;
+}
+.brief-limitations svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.overview-chronology {
+  margin-top: 16px;
+  padding: 12px 18px;
+}
+.overview-chronology .chronology {
+  margin-top: 12px;
+}
+.studio-app .section-intro {
+  margin-bottom: 14px;
+}
+.studio-app .section-intro h2 {
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+.studio-app .section-intro p {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.studio-app .live-trail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+.live-trail .graph-card {
+  min-width: 0;
+  overflow: hidden;
+}
+.trail-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 20px 8px;
+  flex-wrap: wrap;
+}
+.trail-heading h2 {
+  font: 600 28px/1.15 var(--serif);
+  margin: 0 0 5px;
+  letter-spacing: -0.4px;
+}
+.trail-heading p {
+  margin: 0;
+  font-size: 10px;
+}
+.trail-toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 9px;
+  margin-left: auto;
+}
+.trail-toolbar .legend {
+  font-size: 11px;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.trail-toolbar .btn {
+  min-height: 28px;
+}
+.trail-zoom {
+  border-left: 1px solid var(--line);
+  padding-left: 8px;
+  margin-left: 4px;
+}
+.trail-zoom .icon-btn {
+  width: 28px;
+  height: 28px;
+}
+.studio-app .live-trail .graph-viewport {
+  margin: 0;
+  background: #fff;
+  border: 0;
+}
+.live-trail .graph-scale {
+  min-height: 0;
+  margin: 0 auto;
+}
+.live-trail .live-graph .colhead {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+.live-trail .live-graph .colline {
+  top: 40px;
+}
+.studio-app .live-graph .trail-node {
+  width: 200px;
+  height: 86px;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.studio-app .live-graph .trail-node b {
+  font-size: 13px;
+}
+.studio-app .live-graph .trail-node small {
+  font-size: 11px;
+}
+.studio-app .live-graph .trail-node .foot {
+  border: 0;
+  padding: 0;
+  margin-top: 9px;
+  font-size: 10px;
+}
+.studio-app .live-graph .trail-node .foot .badge {
+  font-size: 8px;
+  line-height: 1.2;
+}
+.studio-app .live-graph .trail-node.cashout .foot .badge {
+  background: #f1f1ef;
+  color: #555d68;
+}
+.studio-app .live-graph .elabel {
+  font-size: 10px;
+  padding: 3px 6px;
+}
+.studio-app .live-graph .elabel small {
+  font-size: 9px;
+}
+.live-graph .elabel.report {
+  border-color: #e2a466;
+  border-style: dashed;
+}
+.live-graph .elabel.debit {
+  border-color: #d42e29;
+  color: #b32424;
+}
+.studio-app .live-trail > div.col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 16px;
+}
+.studio-app .live-trail .position-total {
+  font-size: 26px;
+  margin: 8px 0;
+}
+.live-trail .trail-asof {
+  padding: 8px 20px;
+  border-top: 1px solid var(--line-2);
+}
+.live-trail .transfer-sequence {
+  margin: 0 20px;
+  padding: 12px 0 8px;
+}
+.live-trail .replay-time {
+  font-size: 11px;
+  color: var(--brand);
+}
+.live-trail .trail-scrub {
+  margin: 0 4px;
+  height: 55px;
+}
+.trail-scrub:focus-within {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.live-trail .transfer-sequence p {
+  font-size: 10px;
+  max-width: none;
+  margin: 3px 0;
+}
+.live-trail .transfer-table {
+  padding: 8px 20px 14px;
+}
+.live-trail .transfer-table > summary {
+  font-size: 11px;
+}
+@media (min-width: 1100px) {
+  .studio-app .case-h {
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    padding: 14px 20px 12px;
+    gap: 10px;
+  }
+  .studio-app .case-h .stats {
+    grid-column: auto;
+    justify-self: end;
+  }
+  .studio-app .case-h .stat {
+    padding: 0 10px;
+  }
+  .studio-app .case-h .stat b {
+    font-size: 17px;
+  }
+  .studio-app .case-h h1 {
+    font-size: 20px;
+  }
+  .studio-app .case-h .avatar.lg {
+    width: 32px;
+    height: 32px;
+  }
+  .studio-app .case-h .case-summary > .mono {
+    font-size: 10px;
+  }
+}
+@media (max-width: 1000px) {
+  .studio-app .analyst-overview-top {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .studio-app .analyst-overview-top > .col:last-child {
+    grid-row: auto;
+  }
+}
+@media (max-width: 800px) {
+  .studio-app .case-priority-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .studio-app .case-golden-hour .card-b {
+    padding-top: 5px;
+  }
+  .studio-app .live-trail > div.col {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 650px) {
+  .studio-app .analyst-overview-top {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .studio-app .case-next-step {
+    flex-wrap: wrap;
+  }
+  .studio-app .case-next-step > .btn {
+    margin-left: 0;
+    width: auto;
+    min-height: 34px;
+  }
+  .trail-heading {
+    padding: 15px 14px 8px;
+  }
+  .trail-toolbar {
+    align-items: flex-start;
+    margin-left: 0;
+  }
+  .trail-toolbar .legend {
+    justify-content: flex-start;
+    gap: 8px;
+  }
+  .trail-heading h2 {
+    font-size: 25px;
+  }
+  .trail-zoom {
+    margin-left: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .trail-motion {
+    display: none;
+  }
+}
+
+.trail-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 20px;
+  background: #f6f7fc;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 650px) {
+  .studio-app .case-next-step .case-next-icon {
+    display: none;
+  }
+  .studio-app .case-next-step .grow {
+    flex-basis: 100%;
+  }
+  .studio-app .case-next-step .urgent-review-note {
+    font-size: 10px;
+    gap: 3px 8px;
+  }
+}
+
+.live-trail .graph-card:fullscreen {
+  background: #fff;
+  overflow: auto;
+  padding: 8px 16px;
+  border-radius: 0;
+}
+
+/* Legacy three-column Overview rules must not place this two-column view. */
+.analyst-overview-top .tl-item {
+  grid-template-columns: 12px minmax(0, 1fr);
+  gap: 6px 10px;
+  padding-left: 0;
+}
+.analyst-overview-top .tl-item > .debit-card {
+  grid-column: 2;
+  margin-top: 0;
+}
+.next-action-detail {
+  margin: 0;
+}
+.next-action-detail summary {
+  padding: 2px 0;
+}
+.reported-details {
+  margin: 10px 0 0;
+}
+.reported-details > summary {
+  padding: 3px 0;
+}
+.studio-app .live-graph .trail-node .foot {
+  font-size: 11px;
+}
+.studio-app .live-graph .trail-node .foot .badge {
+  font-size: 9.5px;
+}
+.studio-app .live-graph .elabel {
+  font-size: 11px;
+}
+
+.trail-motion-toggle {
+  font-size: 10px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .trail-motion-toggle {
+    display: none;
+  }
+}
