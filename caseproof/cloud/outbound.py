@@ -26,6 +26,10 @@ def prepare(o, cid):
             raise ConflictError("stale_export")
         if Approval.model_validate_json(recorded["data"]).approval_id != approval.approval_id:
             raise ConflictError("approval_required_or_stale")
+        # Both receivers must get the same approved packet: automatic bank updates
+        # wait until delivery finishes (new customer evidence still invalidates it).
+        case["export_guard"] = {"until": time.time() + 180, "packet_id": packet.packet_id}
+        tx.set(o.store.case_path(cid), case)
         for kind in ("case_ticket", "cfcfrms_report_update"):
             payload = (
                 packet.model_dump(mode="json") if kind == "case_ticket" else packet.report_update

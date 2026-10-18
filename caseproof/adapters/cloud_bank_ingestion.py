@@ -1,5 +1,7 @@
 """Immutable bank imports: reserve identities and publish analytical copies durably."""
 
+import time
+
 from caseproof.adapters.firestore_casestore import identity
 from caseproof.adapters.sqlite_casestore import ConflictError
 from caseproof.domain.contracts import canonical, hash_json
@@ -166,6 +168,9 @@ class CloudBankIngestion:
                 if tx.get(ack_path):
                     return
                 case = tx.get(self.store.case_path(cid))
+                if case.get("export_guard", {}).get("until", 0) > time.time():
+                    # An approved packet is being delivered; apply this observation after.
+                    raise ConflictError("approved_delivery_in_progress_retry")
                 current = tx.get(self.store.revision_path(cid, case["revision"]))
                 from caseproof.domain.contracts import CaseSnapshot
 
