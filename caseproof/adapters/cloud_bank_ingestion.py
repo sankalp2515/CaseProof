@@ -1,5 +1,7 @@
 """Immutable bank imports: reserve identities and publish analytical copies durably."""
 
+import time
+
 from caseproof.adapters.firestore_casestore import identity
 from caseproof.adapters.sqlite_casestore import ConflictError
 from caseproof.domain.contracts import canonical, hash_json
@@ -94,7 +96,7 @@ class CloudBankIngestion:
 
         return self.documents.transact(reserve)
 
-    def publish(self, key):
+    def publish(self, key, written=False):
         path = "bank_publications/" + key
         row = self.documents.get(path)
         if not row:
@@ -103,9 +105,10 @@ class CloudBankIngestion:
             if row.get("wake_state") == "pending":
                 self.wake_cases(key, row)
             return {"published": True, "duplicate": True}
-        self.bigquery.publish(
-            row["kind"], row["tenant"], row["record_id"], row["digest"], row["payload"]
-        )
+        if not written:
+            self.bigquery.publish(
+                row["kind"], row["tenant"], row["record_id"], row["digest"], row["payload"]
+            )
 
         def acknowledge(tx):
             current = tx.get(path)
@@ -118,6 +121,30 @@ class CloudBankIngestion:
         # Retrying after a crash here replays immutable analytical writes and wakeups.
         self.wake_cases(key, row)
         return {"published": True, "duplicate": False}
+
+    def publish_many(self, keys):
+        """Publish several pending publications of one tenant and kind with a single
+        BigQuery statement; anything else falls back to one-by-one publication."""
+        rows = {k: self.documents.get("bank_publications/" + k) for k in dict.fromkeys(keys)}
+        pending = {k: r for k, r in rows.items() if r and r["state"] != "published"}
+        groups = {}
+        for k, r in pending.items():
+            groups.setdefault((r["kind"], r["tenant"]), []).append(k)
+        batched = getattr(self.bigquery, "publish_many", None)
+        for (kind, tenant), group in groups.items():
+            written = bool(batched and len(group) > 1)
+            if written:
+                batched(
+                    kind,
+                    tenant,
+                    [
+                        (pending[k]["record_id"], pending[k]["digest"], pending[k]["payload"])
+                        for k in group
+                    ],
+                )
+            # Acknowledge and wake through the single-record path without a second write.
+            for k in group:
+                self.publish(k, written=written)
 
     def wake_cases(self, key, row):
         import json
@@ -141,6 +168,9 @@ class CloudBankIngestion:
                 if tx.get(ack_path):
                     return
                 case = tx.get(self.store.case_path(cid))
+                if case.get("export_guard", {}).get("until", 0) > time.time():
+                    # An approved packet is being delivered; apply this observation after.
+                    raise ConflictError("approved_delivery_in_progress_retry")
                 current = tx.get(self.store.revision_path(cid, case["revision"]))
                 from caseproof.domain.contracts import CaseSnapshot
 

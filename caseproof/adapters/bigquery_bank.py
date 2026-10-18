@@ -101,6 +101,40 @@ class BigQuery:
                     raise
                 time.sleep(1 + attempt * 2)
 
+    def publish_many(self, table, tenant, rows):
+        """rows: [(record_id, digest, payload)]. One MERGE for several records:
+        BigQuery runs DML on a table one statement at a time, so a session's
+        batches publish in one round trip instead of queueing six."""
+        if not rows:
+            return
+        target = self.table(table)
+        extra_columns = ",reported_at" if table == "downstream_reports" else ""
+        extra_values = ",TIMESTAMP(JSON_VALUE(s.payload,'$.reported_at'))" if extra_columns else ""
+        source = " UNION ALL ".join(
+            f"SELECT @tenant tenant,@id{i} id,@digest{i} digest,@payload{i} payload"
+            for i in range(len(rows))
+        )
+        statement = f"""
+            MERGE {target} t USING ({source}) s
+            ON t.tenant=s.tenant AND t.id=s.id
+            WHEN MATCHED AND t.digest!=s.digest THEN
+                UPDATE SET digest=ERROR('immutable batch')
+            WHEN NOT MATCHED THEN INSERT(tenant,id,digest,payload,received_at{extra_columns})
+            VALUES(s.tenant,s.id,s.digest,s.payload,CURRENT_TIMESTAMP(){extra_values})
+        """
+        parameters = {"tenant": tenant}
+        for i, (record_id, digest, payload) in enumerate(rows):
+            parameters.update({f"id{i}": record_id, f"digest{i}": digest, f"payload{i}": payload})
+        for attempt in range(4):
+            try:
+                self.query(statement, parameters)
+                return
+            except Exception as error:
+                body = getattr(getattr(error, "response", None), "text", "") or ""
+                if "concurrent update" not in body or attempt == 3:
+                    raise
+                time.sleep(1 + attempt * 2)
+
 
 class BigQueryBank:
     def __init__(self, client, tenant, documents, max_age=900):

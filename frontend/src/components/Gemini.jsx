@@ -43,14 +43,23 @@ export function useGeminiSummary(caseId, revision, persona) {
   const [state, setState] = useState({ loading: true });
   useEffect(() => {
     const c = new AbortController();
-    setState({ loading: true });
+    // Keep the previous version's summary on screen while the new one drafts.
+    setState((old) => (old.data?.available ? { ...old, refreshing: true } : { loading: true }));
     apiRequest(
       `/v1/cases/${caseId}/genai/summary` +
         (revision != null ? `?revision=${revision}` : ""),
       { persona, signal: c.signal },
     )
-      .then((data) => setState({ data }))
-      .catch((e) => e.name !== "AbortError" && setState({ data: null }));
+      .then((data) =>
+        setState((old) =>
+          data?.available || !old.data?.available ? { data } : { data: old.data },
+        ),
+      )
+      .catch(
+        (e) =>
+          e.name !== "AbortError" &&
+          setState((old) => (old.data?.available ? { data: old.data } : { data: null })),
+      );
     return () => c.abort();
   }, [caseId, revision, persona]);
   return state;

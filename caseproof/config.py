@@ -75,7 +75,7 @@ class Settings(BaseSettings):
     gcs_quarantine_bucket: str = ""
     llm_max_output_tokens: int = Field(default=4096, ge=256, le=8192)
     llm_max_input_chars: int = Field(default=60000, ge=1000, le=100000)
-    cloud_max_cases: int = Field(default=50, ge=1, le=80)
+    cloud_max_cases: int = Field(default=500, ge=1, le=5000)  # complaints per UTC day
 
     @model_validator(mode="after")
     def production_boundary(self):

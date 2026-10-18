@@ -109,8 +109,14 @@ def install(app, o):
             except Exception as error:  # noqa: BLE001 - the queued task retries it
                 emit("inline_bank_publish_deferred", severity="WARNING", error=type(error).__name__)
 
+        ids = [i for i in ids if i]
+        try:
+            o.bank_ingestion.publish_many(ids)
+            return
+        except Exception as error:  # noqa: BLE001 - fall back to one-by-one
+            emit("batched_bank_publish_failed", severity="WARNING", error=type(error).__name__)
         with ThreadPoolExecutor(3) as pool:
-            list(pool.map(one, [i for i in ids if i]))
+            list(pool.map(one, ids))
 
     def publish_now(generated):
         """Publish the new session's bank batches here, in parallel, instead of
