@@ -144,10 +144,16 @@ class BigQueryBank:
         self.max_age = max_age
 
     def batches(self, as_of=None):
+        # Each refresh adds a coverage-only batch; only the latest one per original
+        # batch matters (it covers the whole window), so long sessions stay small.
         return self.client.query(
-            f"SELECT payload FROM {self.client.table('bank_batches')} WHERE tenant=@tenant "
+            f"WITH b AS (SELECT id, payload, received_at FROM {self.client.table('bank_batches')} "
+            "WHERE tenant=@tenant "
             + ("AND received_at<=TIMESTAMP(@as_of) " if as_of else "")
-            + "QUALIFY ROW_NUMBER() OVER(PARTITION BY id ORDER BY received_at)=1",
+            + "QUALIFY ROW_NUMBER() OVER(PARTITION BY id ORDER BY received_at)=1) "
+            "SELECT payload FROM b WHERE TRUE QUALIFY STRPOS(id, '-REFRESH-')=0 "
+            "OR ROW_NUMBER() OVER(PARTITION BY SPLIT(id, '-REFRESH-')[OFFSET(0)], "
+            "STRPOS(id, '-REFRESH-')>0 ORDER BY received_at DESC, id DESC)=1",
             {"tenant": self.tenant, **({"as_of": as_of} if as_of else {})},
         )
 

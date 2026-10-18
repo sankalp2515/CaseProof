@@ -63,11 +63,17 @@ class BigQueryGraph:
                         "source": "ledger",
                     }
                 )
+        # Refresh reports carry only a balance; keep the latest per account plus every
+        # report that carries transfers, so a long session stays under the row limit.
         reports = self.bank.client.query(
-            f"SELECT payload FROM {self.bank.client.table('downstream_reports')} "
+            f"WITH r AS (SELECT id, payload, reported_at "
+            f"FROM {self.bank.client.table('downstream_reports')} "
             "WHERE tenant=@tenant AND reported_at<=TIMESTAMP(@as_of) "
             "AND received_at<=TIMESTAMP(@as_of) "
-            "QUALIFY ROW_NUMBER() OVER(PARTITION BY id ORDER BY received_at)=1",
+            "QUALIFY ROW_NUMBER() OVER(PARTITION BY id ORDER BY received_at)=1) "
+            "SELECT payload FROM r WHERE TRUE QUALIFY STRPOS(id, '-REFRESH-')=0 "
+            "OR ROW_NUMBER() OVER(PARTITION BY JSON_VALUE(payload, '$.account'), "
+            "STRPOS(id, '-REFRESH-')>0 ORDER BY reported_at DESC, id DESC)=1",
             {"tenant": self.bank.tenant, "as_of": as_of},
         )
         for report in sorted(reports, key=lambda r: (dt(r["reported_at"]), r["update_id"])):
