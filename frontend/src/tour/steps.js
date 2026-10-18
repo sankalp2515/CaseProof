@@ -95,7 +95,7 @@ const ALL_STEPS = [
     target: at("report-narrative"),
     title: "Say what happened, in plain words",
     body: [
-      'The customer writes freely. Unknown details can stay blank; the fraud desk asks only for what it needs later. Set how the payment was made to "I made the payment after being deceived".',
+      'The customer writes freely, in English, Hindi or Hinglish. Click "Check what my description is missing": Gemini asks, in the customer’s own language, only for the facts the bank still needs. Set how the payment was made to "I made the payment after being deceived".',
     ],
     example: true,
     action:
@@ -276,7 +276,8 @@ const ALL_STEPS = [
     target: at("evidence-originals"),
     title: "Evidence originals",
     body: [
-      "The uploaded receipt exactly as received, fingerprinted with SHA-256 and never modified. Toggle the boxes to overlay each OCR line on the image, so every cited fact can be traced to the pixels it came from.",
+      "The evidence exactly as the customer sent it, sealed so it cannot be altered. Turn on source boxes to see each line the OCR read, so every fact can be traced back to the image.",
+      "Click Ask Gemini to read this image: Gemini lists the payee, amount and reference it sees, and each finding lights up its box on the image.",
     ],
   },
   {
@@ -486,6 +487,48 @@ const ALL_STEPS = [
     ],
   },
   {
+    id: "urgency",
+    chapter: "overview",
+    go: caseTab("overview"),
+    needsCase: true,
+    target: at("golden-hour-priority"),
+    title: "Why this case is urgent",
+    body: [
+      "The clock started at the scam payment, not when the customer called. It shows how much of the golden hour is left and how much money is at stake, so the analyst knows which case to work first.",
+      "Two roles share this desk: the Analyst investigates and asks the customer for anything missing; a separate Reviewer approves the report. Nobody can approve their own work.",
+    ],
+  },
+  {
+    id: "ai-summary",
+    chapter: "overview",
+    target: at("gemini-summary"),
+    optional: true,
+    absent: "Appears once Gemini has drafted the summary for this case.",
+    title: "Gemini reads the case for you",
+    body: [
+      "Gemini drafts the analyst summary and the cybercrime (NCRP) statement from the verified facts. Every sentence carries a tag for the source it used; a sentence whose source or numbers do not check out is removed before you see it.",
+    ],
+  },
+  {
+    id: "work-done",
+    chapter: "overview",
+    target: at("work-done"),
+    title: "An hour of manual work, already done",
+    body: [
+      "Left: what an analyst normally does by hand across core banking, email and phone calls. Right: what was done automatically for this case, with the real results.",
+    ],
+  },
+  {
+    id: "investigator",
+    chapter: "overview",
+    target: at("gemini-investigator"),
+    title: "Gemini investigator",
+    body: [
+      "Click Investigate with Gemini. An AI agent decides which checks to run (ledger, other complaints about the same payee, the money trail, how fresh our bank records are), runs them and reports findings that point to each check. It can look, never change the case.",
+    ],
+    action: "Optional: click Investigate with Gemini and open a step's results.",
+  },
+  {
     id: "finish",
     chapter: "audit",
     title: "That's the whole path",
@@ -496,14 +539,17 @@ const ALL_STEPS = [
   },
 ];
 
-// Twelve decision points. Ordinary controls remain discoverable outside the tour.
+// Fifteen decision points. Ordinary controls remain discoverable outside the tour.
 const HIGHLIGHTS = [
   "intro",
   "practice",
   "narrative",
   "evidence",
   "registered",
-  "brief",
+  "urgency",
+  "ai-summary",
+  "work-done",
+  "investigator",
   "originals",
   "graph",
   "engine",
@@ -533,24 +579,24 @@ export const STEPS = HIGHLIGHTS.map((id) => {
     return {
       ...step,
       body: [
-        "Bank-observed transfers form the trail. Follow each debit separately and select an account to inspect its source and observation time. Unknown availability stays explicit; an observation is not a confirmed hold or recovery.",
+        "Where the money went, from the receiving banks' own reports. Watch it move: as time passes, mules withdraw cash at ATMs and that money leaves the banking system for good. Click an account to see which bank reported it and when.",
       ],
     };
   if (id === "readiness")
     return {
       ...step,
       body: [
-        "Server rules decide eligibility separately for an urgent referral and a complete handoff. Resolve the relevant gaps first; model confidence never grants approval.",
-        "Only an authorised reviewer can approve the current revision and digest, with a written reason. In practice mode, use the labelled demo identity menu to switch to Reviewer.",
+        "The bank's rules, not the AI, decide when a report is ready: an urgent referral can go early, a complete report needs every required fact. Ticks show what is settled; warnings show what is still missing.",
+        "Only the Reviewer can approve, with a written reason, and only the exact version on screen. Switch to Reviewer demo from the identity menu at the top right.",
       ],
       action:
-        "Inspect the draft and current revision. Review as Reviewer demo only when eligible.",
+        "Look at what is settled. When the case is ready, switch to Reviewer demo and approve it.",
     };
   if (id === "delivery")
     return {
       ...step,
       body: [
-        "Send the approved content, then wait for both simulator acknowledgements. A queued export or one receipt is not complete delivery.",
+        "Send the approved report. It goes to two receivers, the bank's case system and the cybercrime portal, and is delivered only when both confirm receipt.",
         "Assign a follow-up owner and next action. Delivery is a handoff, not a freeze, refund or closed investigation.",
       ],
       action:
@@ -560,25 +606,25 @@ export const STEPS = HIGHLIGHTS.map((id) => {
     return {
       ...step,
       body: [
-        "Choose a timing, start a fresh practice session, then select a customer marked with a suspicious payment. This highlight follows you through account selection and payment selection; it advances only when the narrative form is open.",
+        "Pick when the scam happened and start a fresh session. A new fictional bank, customers and money movements are built for you (about 20 seconds). Then choose a customer marked with a suspicious payment and select that payment.",
       ],
       action:
-        "Start fresh with a current timing, choose a marked scam victim and select their suspicious payment; continue to the narrative.",
+        "Start a session, choose a marked customer, select their suspicious payment and continue.",
       advance: { selector: at("report-narrative") },
     };
   if (id === "intro")
     return {
       ...step,
       body: [
-        "Follow a fresh payment-scam report from the customer to a cited brief, an observed money trail and a reviewed handoff. Twelve highlights explain the decisions that matter.",
-        "Golden-hour priority comes from bank payment timestamps and server rules. A quicker report is useful, but never promises recovery. All accounts and destinations in this practice are fictional.",
+        "10:02. A caller posing as the bank's fraud team talks a customer into sending money to a \"safe account\". By 10:10 the money is moving through mule accounts at other banks, and some is withdrawn at an ATM.",
+        "The first hour, the golden hour, is when banks can still ask for that money to be held. You will report the scam as the customer, then work it as the fraud desk, and see what the system does in seconds that normally takes an analyst an hour. Everything here is synthetic.",
       ],
     };
   if (id === "evidence")
     return {
       ...step,
       body: [
-        "Upload your own supported screenshots, chat, call log or receipt. You can also create a clearly labelled synthetic sample for the selected bank payment. Receiving a file is not completed extraction.",
+        "Attach the payment receipt or a screenshot of the scammer's chat or call log, or create a labelled sample. Document AI reads it, and every fact keeps a link to the exact line it came from.",
       ],
       action:
         "Attach relevant evidence, continue, review and submit the report.",
@@ -591,7 +637,7 @@ export const STEPS = HIGHLIGHTS.map((id) => {
       needsCase: true,
       title: "Verify the handoff",
       body: [
-        "The output is a cited investigation brief and a revision-bound, approved handoff packet with sourced trail positions, two delivery receipts and a follow-up owner. Delivery does not establish a freeze or refund.",
+        "The result: a sourced, reviewer-approved report with the money trail, confirmed by both receivers, and an owner for the follow-up. Sending a report is not a freeze or a refund; the receiving banks act on it.",
         "Inspect audit and approval history here. You can revisit any chapter, or start another fresh complaint with a different customer.",
       ],
     };

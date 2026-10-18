@@ -61,6 +61,27 @@ def readable_brief(brief):
     return "\n".join(lines)
 
 
+DISPOSITION_TEXT = {
+    "REVIEW_REQUIRED": "needs analyst review",
+    "COMPLETE_CANDIDATE": "ready for reviewer sign-off",
+    "ESCALATE_CANDIDATE": "should be escalated now",
+}
+
+
+def plain_summary(snapshot, confirmed):
+    matched, extra = len(snapshot.ledger_matches), len(snapshot.unreported)
+    text = (
+        f"Our bank records confirm {matched} disputed payment{'s' if matched != 1 else ''} "
+        f"totalling INR {confirmed / 100:,.2f}."
+        if matched
+        else "No disputed payment is confirmed in our bank records yet."
+    )
+    if extra:
+        text += f" {extra} more payment{'s' if extra != 1 else ''} to confirm with the customer."
+    status = DISPOSITION_TEXT.get(snapshot.readiness.disposition, "is under review")
+    return text + f" The case {status}."
+
+
 def build_brief(snapshot, approval=None):
     by_segment = {s.segment_id: s for s in snapshot.segments}
     artifacts = {a.artifact_id: a for a in snapshot.artifacts}
@@ -229,10 +250,7 @@ def build_brief(snapshot, approval=None):
         "revision": snapshot.revision,
         "digest": snapshot.digest,
         "title": "Investigation brief",
-        "summary": f"{len(snapshot.ledger_matches)} bank-matched disputed payment(s); "
-        f"INR {confirmed / 100:,.2f} confirmed disputed. "
-        f"{len(snapshot.unreported)} additional payment(s) await confirmation. "
-        f"Assessment: {snapshot.readiness.disposition}.",
+        "summary": plain_summary(snapshot, confirmed),
         "totals": {"confirmed_disputed_minor": confirmed, "candidate_minor": candidate},
         "victim_statements": statements,
         "payments": payments,

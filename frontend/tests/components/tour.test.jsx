@@ -40,6 +40,8 @@ it("every step is well formed and every anchor exists in the application", () =>
   const anchors = new Set(
     [...code.matchAll(/data-tour="([a-z0-9-]+)"/g)].map((m) => m[1]),
   );
+  // <CardH tour="..."> renders the same data-tour attribute.
+  for (const m of code.matchAll(/(?<![-\w])tour="([a-z0-9-]+)"/g)) anchors.add(m[1]);
   for (const m of code.matchAll(/<CardH[^>]*?\btitle="([^"]+)"/gs))
     anchors.add(
       m[1]
@@ -79,7 +81,7 @@ it("covers every analyst tab and finishes on a summary", () => {
       tab,
     ).toBe(true);
   expect(STEPS.at(-1).id).toBe("finish");
-  expect(STEPS.length).toBeLessThanOrEqual(12);
+  expect(STEPS.length).toBeLessThanOrEqual(15);
 });
 
 it("opens at the golden-hour introduction and moves forward and back", () => {
