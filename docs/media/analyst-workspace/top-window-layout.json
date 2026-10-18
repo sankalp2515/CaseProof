@@ -1,0 +1,41 @@
+{
+  "checks": [
+    "Fresh practice has no fabricated complaints",
+    "New complaint 1 submitted with a supported receipt",
+    "Real worker assessed complaint 1",
+    "Urgent eligibility is separate from incomplete full handoff",
+    "New complaint arrives automatically in analyst queue",
+    "Arrival notification visible to analyst",
+    "Clock fits first viewport at 1242",
+    "No body overflow at 1242",
+    "Clock leads the task row at 1242",
+    "Clock fits first viewport at 1440",
+    "No body overflow at 1440",
+    "Clock leads the task row at 1440",
+    "Clock fits first viewport at 768",
+    "No body overflow at 768",
+    "Clock leads the task row at 768",
+    "Clock fits first viewport at 390",
+    "No body overflow at 390",
+    "Clock leads the task row at 390"
+  ],
+  "audits": [
+    {
+      "screen": "golden-hour-top-1242",
+      "violations": []
+    },
+    {
+      "screen": "golden-hour-top-1440",
+      "violations": []
+    },
+    {
+      "screen": "golden-hour-top-768",
+      "violations": []
+    },
+    {
+      "screen": "golden-hour-top-390",
+      "violations": []
+    }
+  ],
+  "pageErrors": []
+}

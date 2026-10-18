@@ -30,7 +30,10 @@ export default function CasePages({ view, tab, stale, reload }) {
   const props = { view, reload, stale };
   return (
     <>
-      <CaseNextStep view={view} stale={stale} reload={reload} tab={tab} />
+      <div className={tab === "overview" ? "case-priority-row" : undefined}>
+        {tab === "overview" && <GoldenHour view={view} />}
+        <CaseNextStep view={view} stale={stale} reload={reload} tab={tab} />
+      </div>
       {view.workflow.bank_data_refresh_required && (
         <div className="banner warn">
           <Clock size={16} />
@@ -58,8 +61,26 @@ export default function CasePages({ view, tab, stale, reload }) {
     </>
   );
 }
+function GoldenHour({ view }) {
+  const clock = view.workflow.clock;
+  const countdown = useDisplayClock(clock);
+  return (
+    <Card className="case-golden-hour">
+      <CardH title="Golden-hour priority" icon={<Clock size={16} />} />
+      <div className="card-b golden-hour-body">
+        <Ring value={(countdown ?? 0) / 60} size={96}>
+          <strong className="mono">{remaining(countdown)}</strong>
+        </Ring>
+        <div>
+          <div className="eyebrow">Response window</div>
+          <p>{clock?.replay ? "Labelled replay" : "Demo clock · IST"}</p>
+          <small>Response urgency, not a recovery deadline</small>
+        </div>
+      </div>
+    </Card>
+  );
+}
 function Overview({ view }) {
-  const countdown = useDisplayClock(view.workflow.clock);
   const { snapshot: s, workflow: w } = view;
   const brief = w.brief || {},
     next = brief.recommended_action || {};
@@ -234,24 +255,7 @@ function Overview({ view }) {
               )}
             </Card>
           )}
-          <Card>
-            <CardH
-              title="Golden-hour priority"
-              icon={<Clock size={16} />}
-              sub="Response urgency, not a recovery deadline"
-            />
-            <div className="card-b col center">
-              <Ring value={(countdown ?? 0) / 60} size={126}>
-                <div>
-                  <div className="eyebrow">Response window</div>
-                  <div className="mono ring-number">{remaining(countdown)}</div>
-                  <small>
-                    {w.clock?.replay ? "Labelled replay" : "Demo clock · IST"}
-                  </small>
-                </div>
-              </Ring>
-            </div>
-          </Card>
+
         </div>
       </div>
       <section className="analyst-assistance" aria-label="AI assistance">

@@ -99,3 +99,12 @@ Reproduce from `frontend/` with `npm test`, `npm run build`, then `CASEPROOF_BAS
 **Frontend follow-up:** optional on-demand investigator findings still require the analyst to inspect their cited sources; this task does not establish accuracy for every generated finding or all long-content combinations. Automated axe and sampled responsive checks do not replace manual screen-reader/language testing.
 
 **Cloud/launch:** no deployment, live cloud acceptance, DNS, queue/Scheduler, Terraform or launch flags changed. Cloud capacity/rate limits, authenticated role mapping and scheduled bank observations need the separate authorized pre-release pass. No real freeze, refund, regulatory filing or case closure is implied by simulator acknowledgements.
+
+
+## Golden-hour placement update
+
+The response window now appears in the first task row, before the long Overview content. Desktop places it beside the next-action panel; tablet/mobile puts it first. The duplicate lower card was removed. The server-derived countdown, elapsed/unknown handling, typography, colours and original urgency disclaimer remain unchanged.
+
+Actual browser inspection and Playwright layout checks at 1242×668, 1440×668, 768×668 and 390×668 confirmed the clock fits the first viewport, leads the task row and introduces no body overflow. All four axe scans reported zero violations. Vite build passed. This is a placement change; the earlier full-workflow acceptance and backend results remain documented separately.
+
+[Desktop layout](media/analyst-workspace/golden-hour-top-1242.png), [mobile layout](media/analyst-workspace/golden-hour-top-390.png), [layout checks](media/analyst-workspace/top-window-layout.json).
