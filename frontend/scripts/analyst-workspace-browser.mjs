@@ -11,11 +11,11 @@ const recoverReceipt = process.env.CASEPROOF_RECEIPT_RECOVERY === "1";
 const require = createRequire(import.meta.url),
   out = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
-    visualQA
+    process.env.CASEPROOF_QA_OUTPUT || (visualQA
       ? "../../var/analyst-density/browser"
       : recoverReceipt
         ? "../../var/receipt-recovery/browser"
-        : "../../var/analyst-workspace/after",
+        : "../../var/analyst-workspace/after"),
   );
 await fs.mkdir(out, { recursive: true });
 const base = process.env.CASEPROOF_BASE_URL || "http://127.0.0.1:8080",

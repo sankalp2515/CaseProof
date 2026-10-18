@@ -1,0 +1,36 @@
+{
+  "tour": {
+    "checks": 54,
+    "cases": [
+      "CASE-fdebb8ba1171a9f2"
+    ],
+    "axeScans": 5,
+    "axeViolations": 0,
+    "uncaughtErrors": 0
+  },
+  "native": {
+    "checks": 85,
+    "cases": [
+      "CASE-12d52542ef4b2be2",
+      "CASE-f02c62fbc8953677"
+    ],
+    "axeScans": 40,
+    "axeViolations": 0,
+    "uncaughtErrors": 0
+  },
+  "docker": {
+    "checks": 85,
+    "cases": [
+      "CASE-0f0c48e2820a8c37",
+      "CASE-450e5ca04432b4ec"
+    ],
+    "axeScans": 40,
+    "axeViolations": 0,
+    "uncaughtErrors": 0
+  },
+  "unit": {
+    "passed": 87,
+    "failed": 0
+  },
+  "deploymentPerformed": false
+}

@@ -356,7 +356,7 @@ const ALL_STEPS = [
       "Proposes questions only for real gaps, from an approved catalogue. The analyst reviews and sends one focused request; the customer receives a private, expiring link to answer it.",
     ],
     action:
-      "Optional: Review & send → Confirm request, then open the link to answer as the customer.",
+      "If a question is proposed: Review & send → Confirm request → Open scoped reply, then submit the customer's answer. On the customer's report, explicitly confirm or exclude any additional payment. Return here and wait for reassessment. If nothing is missing, continue to review.",
   },
   {
     id: "why",
@@ -600,7 +600,7 @@ export const STEPS = HIGHLIGHTS.map((id) => {
         "Assign a follow-up owner and next action. Delivery is a handoff, not a freeze, refund or closed investigation.",
       ],
       action:
-        "Inspect the original packet or download its readable document. Keep follow-up open.",
+        "As Reviewer demo: Review & send approved reports → Confirm send. Wait for both acknowledgements. Then switch to Analyst demo, save an owner, next action and assignment reason. Inspect the delivered report; its money trail is included.",
     };
   if (id === "practice")
     return {

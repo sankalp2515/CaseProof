@@ -4,7 +4,9 @@ import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url),
-  out = fileURLToPath(new URL("../../var/ux-repair/", import.meta.url));
+  out = process.env.CASEPROOF_QA_OUTPUT
+    ? process.env.CASEPROOF_QA_OUTPUT.replace(/[\\/]?$/, "/")
+    : fileURLToPath(new URL("../../var/ux-repair/", import.meta.url));
 await fs.mkdir(out, { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({

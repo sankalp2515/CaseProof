@@ -1,0 +1,84 @@
+{
+  "checks": [
+    "Search is a single aligned control at 1242",
+    "Identity caption and select share a left edge",
+    "Search is a single aligned control at 627",
+    "Search is a single aligned control at 390",
+    "Cases is an all-session history register, not duplicate KPIs",
+    "Tour keeps the landing destination",
+    "Tour 1 actions inside 668px viewport",
+    "Tour 2 actions inside 668px viewport",
+    "Tour cannot jump past incomplete intake",
+    "Tour footer accessible at 627x668",
+    "Tour footer accessible at 390x668",
+    "Tour footer accessible at 1242x400",
+    "Selected scam victim has compact bank-backed practice payee",
+    "Payment selector describes newest-first ordering",
+    "Tour 3 actions inside 668px viewport",
+    "After-payment contact time requires explicit confirmation",
+    "Tour 4 actions inside 668px viewport",
+    "AI example option matches the configured provider",
+    "Only receipt shows generation progress",
+    "chat keeps its label while receipt generates",
+    "call log keeps its label while receipt generates",
+    "Only chat shows generation progress",
+    "receipt keeps its label while chat generates",
+    "call log keeps its label while chat generates",
+    "Only call log shows generation progress",
+    "receipt keeps its label while call log generates",
+    "chat keeps its label while call log generates",
+    "Review remains a valid tour stage after the old warning timeout",
+    "Guidance follows Back from Review to Evidence",
+    "Tour 3 actions inside 668px viewport",
+    "Tour Back opens the narrative without losing it",
+    "Tour 4 actions inside 668px viewport",
+    "Tour 5 actions inside 668px viewport",
+    "Back after submission preserves the report instead of seeking an absent form",
+    "Tour 5 actions inside 668px viewport",
+    "Analyst handoff is highlighted in the header",
+    "Victim receipt no longer contains a staff handoff button",
+    "Dismissing the hint keeps the header handoff available",
+    "Golden-hour case triggers reference-style alert on open analyst queue",
+    "Bank-selected alert amount is sourced before OCR",
+    "First contact does not replace the bank debit clock",
+    "Tour 6 actions inside 668px viewport",
+    "New realistic handle survives actual OCR and matching",
+    "Role distinction is visible without opening a separate guide",
+    "Tour 7 actions inside 668px viewport",
+    "Tour 8 actions inside 668px viewport",
+    "Tour 9 actions inside 668px viewport",
+    "Tour 10 actions inside 668px viewport",
+    "Analyst cannot approve the handoff",
+    "Tour 11 actions inside 668px viewport",
+    "Guided case reaches both actual simulator acknowledgements",
+    "Tour 12 actions inside 668px viewport",
+    "Tour Finish requires the actual completed handoff and ownership",
+    "Tour ends after real handoff without uncaught UI errors"
+  ],
+  "audits": [
+    {
+      "name": "case-register",
+      "violations": []
+    },
+    {
+      "name": "practice-evidence",
+      "violations": []
+    },
+    {
+      "name": "report-handoff-header",
+      "violations": []
+    },
+    {
+      "name": "report-handoff-mobile",
+      "violations": []
+    },
+    {
+      "name": "golden-hour-alert",
+      "violations": []
+    }
+  ],
+  "errors": [],
+  "caseId": "CASE-fdebb8ba1171a9f2",
+  "providers": "Tesseract + local rules; samples bank-simulator",
+  "liveGoogle": false
+}
