@@ -1,0 +1,23 @@
+{
+  "unit": {
+    "passed": 87,
+    "failed": 0
+  },
+  "e2e": {
+    "checks": 85,
+    "axeScans": 40,
+    "uncaughtErrors": 0,
+    "caseIds": [
+      "CASE-b47ffb8be8b680f0",
+      "CASE-8e2f39c20acb976e"
+    ]
+  },
+  "visual": {
+    "checks": 44,
+    "axeScans": 20,
+    "violations": 0,
+    "uncaughtErrors": 0
+  },
+  "dockerRepeat": "PNG extraction passed; customer reply returned a service-busy error; full Docker rerun did not pass",
+  "deployed": false
+}

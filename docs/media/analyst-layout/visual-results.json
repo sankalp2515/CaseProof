@@ -1,0 +1,133 @@
+{
+  "checks": [
+    "Existing bank catalogue selected for new complaints",
+    "overview no body overflow at 1242",
+    "overview compact next action at 1242",
+    "Payments remain beside the brief at 1242",
+    "evidence no body overflow at 1242",
+    "evidence compact next action at 1242",
+    "trail no body overflow at 1242",
+    "trail compact next action at 1242",
+    "Trail starts in the first viewport at 1242",
+    "requests no body overflow at 1242",
+    "requests compact next action at 1242",
+    "review no body overflow at 1242",
+    "review compact next action at 1242",
+    "overview no body overflow at 1440",
+    "overview compact next action at 1440",
+    "Payments remain beside the brief at 1440",
+    "evidence no body overflow at 1440",
+    "evidence compact next action at 1440",
+    "trail no body overflow at 1440",
+    "trail compact next action at 1440",
+    "Trail starts in the first viewport at 1440",
+    "requests no body overflow at 1440",
+    "requests compact next action at 1440",
+    "review no body overflow at 1440",
+    "review compact next action at 1440",
+    "overview no body overflow at 768",
+    "evidence no body overflow at 768",
+    "trail no body overflow at 768",
+    "requests no body overflow at 768",
+    "review no body overflow at 768",
+    "overview no body overflow at 390",
+    "evidence no body overflow at 390",
+    "trail no body overflow at 390",
+    "requests no body overflow at 390",
+    "review no body overflow at 390",
+    "Keyboard scrub fades future transfers",
+    "Debit follow toggles",
+    "Account source inspector receives focus",
+    "Transfer marker moves along the recorded path",
+    "Continuous flow motion can be paused",
+    "Continuous flow motion resumes",
+    "Native full-screen graph opens",
+    "Full-screen graph exits",
+    "No uncaught browser errors"
+  ],
+  "audits": [
+    {
+      "screen": "overview-1242",
+      "violations": []
+    },
+    {
+      "screen": "evidence-1242",
+      "violations": []
+    },
+    {
+      "screen": "trail-1242",
+      "violations": []
+    },
+    {
+      "screen": "requests-1242",
+      "violations": []
+    },
+    {
+      "screen": "review-1242",
+      "violations": []
+    },
+    {
+      "screen": "overview-1440",
+      "violations": []
+    },
+    {
+      "screen": "evidence-1440",
+      "violations": []
+    },
+    {
+      "screen": "trail-1440",
+      "violations": []
+    },
+    {
+      "screen": "requests-1440",
+      "violations": []
+    },
+    {
+      "screen": "review-1440",
+      "violations": []
+    },
+    {
+      "screen": "overview-768",
+      "violations": []
+    },
+    {
+      "screen": "evidence-768",
+      "violations": []
+    },
+    {
+      "screen": "trail-768",
+      "violations": []
+    },
+    {
+      "screen": "requests-768",
+      "violations": []
+    },
+    {
+      "screen": "review-768",
+      "violations": []
+    },
+    {
+      "screen": "overview-390",
+      "violations": []
+    },
+    {
+      "screen": "evidence-390",
+      "violations": []
+    },
+    {
+      "screen": "trail-390",
+      "violations": []
+    },
+    {
+      "screen": "requests-390",
+      "violations": []
+    },
+    {
+      "screen": "review-390",
+      "violations": []
+    }
+  ],
+  "pageErrors": [],
+  "caseId": "CASE-8e2f39c20acb976e",
+  "readOnly": true
+}

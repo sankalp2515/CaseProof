@@ -1,0 +1,354 @@
+{
+  "checks": [
+    "Fresh practice has no fabricated complaints",
+    "New complaint 1 submitted with a supported receipt",
+    "Real worker assessed complaint 1",
+    "Urgent eligibility is separate from incomplete full handoff",
+    "New complaint arrives automatically in analyst queue",
+    "Arrival notification visible to analyst",
+    "Next-action banner stays compact at desktop",
+    "Case next action precedes investigation content",
+    "Brief precedes optional AI tools",
+    "Readable fact citation selects the original source",
+    "Fractional paisa correction is blocked",
+    "Reviewer can inspect evidence but cannot correct it",
+    "Identity switches do not create duplicate unread arrivals",
+    "Backend trail rendered as account graph",
+    "Request recommendation is separated from history",
+    "No ambiguous generic customer shortcut",
+    "Reviewer cannot send analyst clarification",
+    "Actual missing-information link reply received",
+    "Reply creates a new assessment revision",
+    "Additional debit explicitly denied",
+    "Analyst reviewer-only control disabled",
+    "Explicit handoff switches to reviewer for this case",
+    "Both simulator acknowledgements recorded",
+    "Delivered report readable as a document",
+    "Owner and awaiting_external follow-up saved",
+    "Follow-up survives reload",
+    "New complaint 2 submitted with a supported receipt",
+    "Real worker assessed complaint 2",
+    "Urgent eligibility is separate from incomplete full handoff",
+    "New complaint arrives automatically in analyst queue",
+    "Arrival notification visible to analyst",
+    "Next-action banner stays compact at desktop",
+    "Case next action precedes investigation content",
+    "Brief precedes optional AI tools",
+    "Readable fact citation selects the original source",
+    "Fractional paisa correction is blocked",
+    "Reviewer can inspect evidence but cannot correct it",
+    "Identity switches do not create duplicate unread arrivals",
+    "Backend trail rendered as account graph",
+    "Request recommendation is separated from history",
+    "No ambiguous generic customer shortcut",
+    "Reviewer cannot send analyst clarification",
+    "Actual missing-information link reply received",
+    "Reply creates a new assessment revision",
+    "Additional debit explicitly confirmed",
+    "Analyst reviewer-only control disabled",
+    "Explicit handoff switches to reviewer for this case",
+    "Both simulator acknowledgements recorded",
+    "Delivered report readable as a document",
+    "Owner and awaiting_external follow-up saved",
+    "Follow-up survives reload",
+    "Victim no body overflow at 390",
+    "Victim no body overflow at 768",
+    "Analyst no body overflow at 1280",
+    "Analyst no body overflow at 1440",
+    "overview has no body overflow at 390",
+    "evidence has no body overflow at 390",
+    "trail has no body overflow at 390",
+    "requests has no body overflow at 390",
+    "review has no body overflow at 390",
+    "delivery has no body overflow at 390",
+    "overview has no body overflow at 768",
+    "evidence has no body overflow at 768",
+    "trail has no body overflow at 768",
+    "requests has no body overflow at 768",
+    "review has no body overflow at 768",
+    "delivery has no body overflow at 768",
+    "overview has no body overflow at 1280",
+    "evidence has no body overflow at 1280",
+    "trail has no body overflow at 1280",
+    "requests has no body overflow at 1280",
+    "review has no body overflow at 1280",
+    "delivery has no body overflow at 1280",
+    "overview has no body overflow at 1440",
+    "evidence has no body overflow at 1440",
+    "trail has no body overflow at 1440",
+    "requests has no body overflow at 1440",
+    "review has no body overflow at 1440",
+    "delivery has no body overflow at 1440",
+    "Expanded trail renders confirmed bank paths",
+    "Replay changes transfer visibility without changing backend positions",
+    "Second debit can be followed",
+    "Inspector can be reached from selected account",
+    "At least one new case completed a full reviewed handoff",
+    "No uncaught browser errors"
+  ],
+  "cases": [
+    "CASE-b47ffb8be8b680f0",
+    "CASE-8e2f39c20acb976e"
+  ],
+  "pageErrors": [],
+  "audits": [
+    {
+      "screen": "overview",
+      "violations": []
+    },
+    {
+      "screen": "evidence",
+      "violations": []
+    },
+    {
+      "screen": "trail",
+      "violations": []
+    },
+    {
+      "screen": "requests",
+      "violations": []
+    },
+    {
+      "screen": "reviewer",
+      "violations": []
+    },
+    {
+      "screen": "delivery",
+      "violations": []
+    },
+    {
+      "screen": "overview",
+      "violations": []
+    },
+    {
+      "screen": "evidence",
+      "violations": []
+    },
+    {
+      "screen": "trail",
+      "violations": []
+    },
+    {
+      "screen": "requests",
+      "violations": []
+    },
+    {
+      "screen": "reviewer",
+      "violations": []
+    },
+    {
+      "screen": "delivery",
+      "violations": []
+    },
+    {
+      "screen": "victim-390",
+      "violations": []
+    },
+    {
+      "screen": "victim-768",
+      "violations": []
+    },
+    {
+      "screen": "queue-1280",
+      "violations": []
+    },
+    {
+      "screen": "queue-1440",
+      "violations": []
+    },
+    {
+      "screen": "overview-390",
+      "violations": []
+    },
+    {
+      "screen": "evidence-390",
+      "violations": []
+    },
+    {
+      "screen": "trail-390",
+      "violations": []
+    },
+    {
+      "screen": "requests-390",
+      "violations": []
+    },
+    {
+      "screen": "review-390",
+      "violations": []
+    },
+    {
+      "screen": "delivery-390",
+      "violations": []
+    },
+    {
+      "screen": "overview-768",
+      "violations": []
+    },
+    {
+      "screen": "evidence-768",
+      "violations": []
+    },
+    {
+      "screen": "trail-768",
+      "violations": []
+    },
+    {
+      "screen": "requests-768",
+      "violations": []
+    },
+    {
+      "screen": "review-768",
+      "violations": []
+    },
+    {
+      "screen": "delivery-768",
+      "violations": []
+    },
+    {
+      "screen": "overview-1280",
+      "violations": []
+    },
+    {
+      "screen": "evidence-1280",
+      "violations": []
+    },
+    {
+      "screen": "trail-1280",
+      "violations": []
+    },
+    {
+      "screen": "requests-1280",
+      "violations": []
+    },
+    {
+      "screen": "review-1280",
+      "violations": []
+    },
+    {
+      "screen": "delivery-1280",
+      "violations": []
+    },
+    {
+      "screen": "overview-1440",
+      "violations": []
+    },
+    {
+      "screen": "evidence-1440",
+      "violations": []
+    },
+    {
+      "screen": "trail-1440",
+      "violations": []
+    },
+    {
+      "screen": "requests-1440",
+      "violations": []
+    },
+    {
+      "screen": "review-1440",
+      "violations": []
+    },
+    {
+      "screen": "delivery-1440",
+      "violations": []
+    }
+  ],
+  "providers": [
+    [
+      {
+        "mode": "local",
+        "provider": "local-rules",
+        "model_id": "local-literal-rules-v2",
+        "prompt_hash": "",
+        "schema_version": "1",
+        "input_digest": "7c26c11f572389ed286b1ef9a21688c4ca7029116cdd7bb8da5d515e90d666c1",
+        "latency_ms": 1.2215000024298206,
+        "tokens_in": 0,
+        "tokens_out": 0
+      }
+    ],
+    [
+      {
+        "mode": "local",
+        "provider": "local-rules",
+        "model_id": "local-literal-rules-v2",
+        "prompt_hash": "",
+        "schema_version": "1",
+        "input_digest": "69cff3c6ef314a615af4ccc0cc7b5c0dc8159b607230024a716c41640344635f",
+        "latency_ms": 0.6762999983038753,
+        "tokens_in": 0,
+        "tokens_out": 0
+      }
+    ]
+  ],
+  "decisionStages": [
+    {
+      "caseId": "CASE-b47ffb8be8b680f0",
+      "stage": "before clarification",
+      "revision": 5,
+      "readiness": "REVIEW_REQUIRED",
+      "urgentReferral": {
+        "eligible": true,
+        "transaction_ids": [
+          "SIM-EA15732213-T1"
+        ],
+        "reason": "Identified disputed bank debit; narrative and downstream trail are separate."
+      },
+      "unknowns": [
+        "all_transfers_accounted",
+        "ledger_coverage"
+      ],
+      "nextAction": {
+        "owner": "fraud_analyst",
+        "action": "Request missing customer information",
+        "request_id": "REQ-confirm_additional_transfer",
+        "reason": "Please confirm whether the additional debit belongs to this complaint and, if available, share the relevant call-log crop."
+      }
+    },
+    {
+      "caseId": "CASE-b47ffb8be8b680f0",
+      "stage": "after clarification and review",
+      "revision": 17,
+      "readiness": "COMPLETE_CANDIDATE",
+      "deliveredKinds": [
+        "cfcfrms_report_update",
+        "case_ticket"
+      ]
+    },
+    {
+      "caseId": "CASE-8e2f39c20acb976e",
+      "stage": "before clarification",
+      "revision": 7,
+      "readiness": "REVIEW_REQUIRED",
+      "urgentReferral": {
+        "eligible": true,
+        "transaction_ids": [
+          "SIM-36F4AEE40A-T1"
+        ],
+        "reason": "Identified disputed bank debit; narrative and downstream trail are separate."
+      },
+      "unknowns": [
+        "all_transfers_accounted"
+      ],
+      "nextAction": {
+        "owner": "fraud_analyst",
+        "action": "Request missing customer information",
+        "request_id": "REQ-confirm_additional_transfer",
+        "reason": "Please confirm whether the additional debit belongs to this complaint and, if available, share the relevant call-log crop."
+      }
+    },
+    {
+      "caseId": "CASE-8e2f39c20acb976e",
+      "stage": "after clarification and review",
+      "revision": 14,
+      "readiness": "COMPLETE_CANDIDATE",
+      "deliveredKinds": [
+        "cfcfrms_report_update",
+        "case_ticket"
+      ]
+    }
+  ],
+  "provider": "Native local worker, literal extraction and real bank/feed/receiver simulators; UTF-8 receipts",
+  "cloudLive": false,
+  "inputEvidenceMode": "supported UTF-8 receipt from actual bank record"
+}

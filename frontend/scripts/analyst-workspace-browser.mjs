@@ -4,13 +4,18 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+const textEvidence = process.env.CASEPROOF_TEXT_EVIDENCE === "1";
+const reuseBank = process.env.CASEPROOF_REUSE_BANK === "1";
+const visualQA = process.env.CASEPROOF_VISUAL_QA === "1";
 const recoverReceipt = process.env.CASEPROOF_RECEIPT_RECOVERY === "1";
 const require = createRequire(import.meta.url),
   out = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
-    recoverReceipt
-      ? "../../var/receipt-recovery/browser"
-      : "../../var/analyst-workspace/after",
+    visualQA
+      ? "../../var/analyst-density/browser"
+      : recoverReceipt
+        ? "../../var/receipt-recovery/browser"
+        : "../../var/analyst-workspace/after",
   );
 await fs.mkdir(out, { recursive: true });
 const base = process.env.CASEPROOF_BASE_URL || "http://127.0.0.1:8080",
@@ -107,30 +112,36 @@ try {
   let available = false;
   for (let attempt = 0; attempt < 20; attempt++) {
     try {
-      const health = await context.request.get(base + "/health");
-      const config = await context.request.get(base + "/v1/ui-config");
-      if (health.ok() && config.ok()) { available = true; break; }
+      await read("/health");
+      await read("/v1/ui-config");
+      available = true;
+      break;
     } catch {}
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
-  assert.ok(available, "Real API health and UI configuration must be available");
+  assert.ok(
+    available,
+    "Real API health and UI configuration must be available",
+  );
   await victim.goto(base + "/app/#/victim/start");
   await victim
     .getByRole("button", { name: "Start a fresh practice session" })
     .waitFor({ timeout: 90000 });
-  const fresh = victim.waitForResponse(
-    (r) =>
-      r.url().endsWith("/v1/victim/demo-session") &&
-      r.request().method() === "POST",
-    { timeout: 180000 },
-  );
-  await victim
-    .getByRole("button", { name: "Start a fresh practice session" })
-    .click();
-  assert.equal((await fresh).status(), 200);
-  await victim
-    .getByRole("button", { name: "Start a fresh practice session" })
-    .isEnabled();
+  if (!reuseBank) {
+    const fresh = victim.waitForResponse(
+      (r) =>
+        r.url().endsWith("/v1/victim/demo-session") &&
+        r.request().method() === "POST",
+      { timeout: 180000 },
+    );
+    await victim
+      .getByRole("button", { name: "Start a fresh practice session" })
+      .click();
+    assert.equal((await fresh).status(), 200);
+    await victim
+      .getByRole("button", { name: "Start a fresh practice session" })
+      .isEnabled();
+  }
   await victim.waitForFunction(
     () => !document.querySelector(".customer-option")?.disabled,
   );
@@ -140,10 +151,12 @@ try {
     .click();
   await victim.waitForURL(/victim\/home/);
   await staff.goto(base + "/app/#/staff/queue");
-  await staff
-    .getByText("No complaints in this practice session", { exact: true })
-    .waitFor({ timeout: 90000 });
-  check("Fresh practice has no fabricated complaints");
+  if (!reuseBank) {
+    await staff
+      .getByText("No complaints in this practice session", { exact: true })
+      .waitFor({ timeout: 90000 });
+    check("Fresh practice has no fabricated complaints");
+  } else check("Existing bank catalogue selected for new complaints");
   for (let run = 0; run < 2; run++) {
     if (run) {
       await navigate(victim, "/victim/start");
@@ -172,7 +185,7 @@ try {
       );
     await victim.getByRole("button", { name: "Continue", exact: true }).click();
     let savedReceipt;
-    if (recoverReceipt ? run === 1 : run === 0) {
+    if (!textEvidence && (recoverReceipt ? run === 1 : run === 0)) {
       const pending = victim.waitForEvent("download");
       await victim.getByRole("link", { name: /View bank receipt/ }).click();
       const downloaded = await pending;
@@ -212,7 +225,7 @@ try {
     providers.push(sourceSnapshot.run_meta || []);
     check(
       "Real worker assessed complaint " + (run + 1),
-      (recoverReceipt ? run === 1 : run === 0)
+      !textEvidence && (recoverReceipt ? run === 1 : run === 0)
         ? sourceSnapshot.segments.some((s) => s.box_2d)
         : sourceSnapshot.segments.length > 0,
     );
@@ -253,6 +266,13 @@ try {
     await staff
       .getByRole("heading", { name: "Payment inventory", exact: true })
       .waitFor({ timeout: 30000 });
+    if (visualQA)
+      check(
+        "Next-action banner stays compact at desktop",
+        await staff
+          .locator(".case-next-step")
+          .evaluate((el) => el.getBoundingClientRect().height < 155),
+      );
     await shot(staff, `after-overview-${run}`);
     await axe(staff, "overview");
     check(
@@ -480,16 +500,33 @@ try {
       exact: true,
     });
     if (await deny.count()) {
-      await deny.click();
+      if (visualQA && run === 1)
+        await victim
+          .getByRole("button", {
+            name: "Yes, dispute this payment",
+            exact: true,
+          })
+          .click();
+      else await deny.click();
       await victim
-        .getByRole("button", { name: "Confirm unrelated payment", exact: true })
+        .getByRole("button", {
+          name:
+            visualQA && run === 1
+              ? "Confirm dispute"
+              : "Confirm unrelated payment",
+          exact: true,
+        })
         .click();
       await victim
         .getByText("No clarification is needed from you right now.", {
           exact: true,
         })
         .waitFor({ timeout: 90000 });
-      check("Additional debit explicitly denied");
+      check(
+        visualQA && run === 1
+          ? "Additional debit explicitly confirmed"
+          : "Additional debit explicitly denied",
+      );
     }
     w = await settled(cid);
     await navigate(staff, `/staff/cases/${cid}/review`);
@@ -701,6 +738,7 @@ try {
     for (const tab of [
       "overview",
       "evidence",
+      ...(visualQA ? ["trail"] : []),
       "requests",
       "review",
       "delivery",
@@ -715,6 +753,49 @@ try {
         ),
       );
     }
+  }
+  if (visualQA) {
+    await staff.setViewportSize({ width: 1242, height: 668 });
+    await navigate(staff, `/staff/cases/${cases.at(-1)}/trail`);
+    await staff.locator(".trail-node").first().waitFor();
+    await staff.locator(".case-body").evaluate((el) => (el.scrollTop = 0));
+    await shot(staff, "trail-reference-1242");
+    const count = await staff.locator(".trail-node").count();
+    check("Expanded trail renders confirmed bank paths", count >= 4);
+    await staff.getByRole("button", { name: "Replay", exact: true }).click();
+    await staff.getByRole("button", { name: "Pause", exact: true }).waitFor();
+    await staff.getByRole("button", { name: "Pause", exact: true }).click();
+    const range = staff.getByRole("slider", {
+      name: "Transfer sequence",
+      exact: true,
+    });
+    await range.focus();
+    await range.press("Home");
+    check(
+      "Replay changes transfer visibility without changing backend positions",
+      (await staff.locator(".live-graph svg g[opacity='0.15']").count()) > 0,
+    );
+    await range.press("End");
+    await staff.getByRole("button", { name: /^Debit 2/ }).click();
+    check(
+      "Second debit can be followed",
+      (await staff
+        .getByRole("button", { name: /^Debit 2/ })
+        .getAttribute("aria-pressed")) === "true",
+    );
+    await staff.locator(".trail-node").last().click();
+    await staff
+      .getByRole("button", {
+        name: "Inspect sources & observation",
+        exact: true,
+      })
+      .click();
+    check(
+      "Inspector can be reached from selected account",
+      await staff
+        .locator("#trail-inspector")
+        .evaluate((el) => document.activeElement === el),
+    );
   }
   check(
     "At least one new case completed a full reviewed handoff",
@@ -731,8 +812,11 @@ try {
         audits,
         providers,
         decisionStages,
-        provider: "local (real isolated worker/OCR/simulators)",
+        provider: textEvidence ? "local real worker, literal extraction and bank/feed/receiver simulators; UTF-8 receipts" : "local real worker, OCR and simulators",
         cloudLive: false,
+        inputEvidenceMode: textEvidence
+          ? "supported UTF-8 receipt from actual bank record"
+          : "PNG and UTF-8",
       },
       null,
       2,

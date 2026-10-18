@@ -16,3 +16,5 @@ import "./quality.css";
 
 import "./pages/victim/victim-premium.css";
 import "./pages/case/analyst-workspace.css";
+
+import "./pages/case/analyst-density.css";

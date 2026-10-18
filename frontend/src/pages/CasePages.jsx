@@ -68,7 +68,7 @@ function GoldenHour({ view }) {
     <Card className="case-golden-hour">
       <CardH title="Golden-hour priority" icon={<Clock size={16} />} />
       <div className="card-b golden-hour-body">
-        <Ring value={(countdown ?? 0) / 60} size={96}>
+        <Ring value={(countdown ?? 0) / 60} size={72}>
           <strong className="mono">{remaining(countdown)}</strong>
         </Ring>
         <div>
@@ -82,16 +82,22 @@ function GoldenHour({ view }) {
 }
 function Overview({ view }) {
   const { snapshot: s, workflow: w } = view;
-  const brief = w.brief || {},
-    next = brief.recommended_action || {};
-  const delivered = w.status === "completed";
+  const brief = w.brief || {};
   const to = (section) => go(`/staff/cases/${s.case_id}/${section}`);
+  // Display identical statements once; all original claims remain in Evidence.
+  const statements = [
+    ...new Map(
+      (brief.victim_statements || []).map((c) => [
+        c.kind + ":" + String(c.value),
+        c,
+      ]),
+    ).values(),
+  ];
   return (
     <>
-      <div className="analyst-overview-top overview-grid">
+      <div className="analyst-overview-top">
         <div className="col gap16">
-          {" "}
-          <Card className="ai-frame">
+          <Card className="ai-frame overview-brief">
             <CardH
               title="Investigation brief"
               icon={<Sparkles size={17} />}
@@ -102,40 +108,73 @@ function Overview({ view }) {
             <div className="card-b">
               <p className="brief-summary">
                 {brief.summary ||
-                  "The current assessment is still being prepared. Inspect the processing status before acting."}
+                  "The current assessment is still being prepared. Inspect processing before acting."}
               </p>
-              <div className="eyebrow">What the customer reported</div>
-              {(brief.victim_statements || []).slice(0, 4).map((c) => (
-                <div className="statement" key={c.claim_id}>
-                  <span>
-                    {c.kind === "amount"
-                      ? formatMinor(c.value)
-                      : String(c.value ?? "Unknown")}
-                  </span>
-                  <Status value={c.state} />
-                  <div className="muted">
-                    {c.sources?.map((x) => x.text).join(" · ")}
+              <details className="reported-details">
+                <summary>
+                  What the customer reported · {statements.length} details
+                </summary>
+                {statements.map((c) => (
+                  <div className="statement" key={c.claim_id}>
+                    <span>
+                      {c.kind === "amount"
+                        ? formatMinor(c.value)
+                        : String(c.value ?? "Unknown")}
+                    </span>{" "}
+                    <Status value={c.state} />
+                    <button
+                      className="chip-cite"
+                      onClick={() =>
+                        to(
+                          "evidence?source=" +
+                            encodeURIComponent(
+                              c.sources?.[0]?.segment_id || "",
+                            ),
+                        )
+                      }
+                    >
+                      Inspect source
+                    </button>
                   </div>
-                  <button
-                    className="chip-cite"
-                    onClick={() =>
-                      to(
-                        "evidence?source=" +
-                          encodeURIComponent(c.sources?.[0]?.segment_id || ""),
-                      )
-                    }
-                  >
-                    Inspect source
-                  </button>
-                </div>
-              ))}
-              <div className="banner info">
-                <Info size={15} />
+                ))}
+              </details>
+              <p className="brief-limitations">
+                <Info size={13} />
                 {brief.limitations ||
-                  "Synthetic advisory assessment. Observed funds are not frozen, recovered or refunded."}
-              </div>
+                  "Advisory assessment. Observed funds are not a confirmed hold or recovery."}
+              </p>
             </div>
           </Card>
+          {(brief.conflicts?.length > 0 || brief.unknowns?.length > 0) && (
+            <Card className="card-b" data-tour="unresolved-matters">
+              <h3>Still to resolve</h3>
+              {(brief.unknowns || []).map((x, i) => (
+                <p key={i}>
+                  {typeof x === "string"
+                    ? {
+                        all_transfers_accounted:
+                          "Confirm which payments belong in the complaint.",
+                        deception_account:
+                          "Clarify how the customer was persuaded to pay.",
+                        ledger_coverage:
+                          "Current bank records are still needed.",
+                        readable_receipt:
+                          "A readable payment source is still needed.",
+                        transaction_reference:
+                          "The transaction reference is not yet established.",
+                      }[x] || "Not yet established: " + label(x)
+                    : "Inspect this unresolved item in Evidence."}
+                </p>
+              ))}
+              {brief.conflicts?.length > 0 && (
+                <Badge tone="crit">
+                  {brief.conflicts.length} conflicting claims
+                </Badge>
+              )}
+            </Card>
+          )}
+        </div>
+        <div className="col gap16">
           <Card>
             <CardH
               title="Payment inventory"
@@ -180,84 +219,24 @@ function Overview({ view }) {
                   </Empty>
                 )}
               </div>
-              <div className="hr" />
-              <div className="eyebrow">Source chronology</div>
-              {(brief.chronology || []).slice(-6).map((e, i) => (
-                <div className="chronology" key={i}>
-                  <span className="mono muted">{time(e.at)}</span>
-                  <b>{e.event}</b>
-                  <small className="muted">
-                    {label(e.source_category)} · {e.source_id}
-                  </small>
-                </div>
-              ))}
             </div>
           </Card>
-        </div>{" "}
-        <div className="col gap16">
-          {" "}
-          <div className="recommended-first-action" data-tour="next-best-step">
-            <h3>{delivered ? "Next follow-up" : "Recommended first action"}</h3>
-            <p>
-              <b>
-                {delivered
-                  ? "Confirm ownership and external response"
-                  : next.action || "Inspect current assessment"}
-              </b>
-            </p>
-            <p>
-              {delivered
-                ? "Inspect both receiver acknowledgements and keep the investigation open for the next external update."
-                : next.reason || "Wait for the current assessment to finish."}
-            </p>
-            <button
-              className="btn"
-              onClick={() =>
-                to(
-                  delivered
-                    ? "delivery"
-                    : next.request_id
-                      ? "requests"
-                      : next.owner === "reviewer"
-                        ? "review"
-                        : "evidence",
-                )
-              }
-            >
-              Open next action <ArrowRight size={14} />
-            </button>
-          </div>
-          {(brief.conflicts?.length > 0 || brief.unknowns?.length > 0) && (
-            <Card className="card-b" data-tour="unresolved-matters">
-              <h3>Still to resolve</h3>
-              {(brief.unknowns || []).map((x, i) => (
-                <p key={i}>
-                  {typeof x === "string"
-                    ? {
-                        all_transfers_accounted:
-                          "Confirm which payments belong in the complaint.",
-                        deception_account:
-                          "Clarify how the customer was persuaded to pay.",
-                        ledger_coverage:
-                          "Current bank records are still needed.",
-                        readable_receipt:
-                          "A readable payment source is still needed.",
-                        transaction_reference:
-                          "The transaction reference is not yet established.",
-                      }[x] || "Not yet established: " + label(x)
-                    : "Inspect this unresolved item in Evidence."}
-                </p>
-              ))}
-              {brief.conflicts?.length > 0 && (
-                <Badge tone="crit">
-                  {brief.conflicts.length} conflicting claims
-                </Badge>
-              )}
-            </Card>
-          )}
-
         </div>
       </div>
+      <details className="overview-chronology analyst-methods">
+        <summary>
+          Source chronology · {(brief.chronology || []).length} events
+        </summary>
+        {(brief.chronology || []).map((e, i) => (
+          <div className="chronology" key={i}>
+            <span className="mono muted">{time(e.at)}</span>
+            <b>{e.event}</b>
+            <small className="muted">
+              {label(e.source_category)} · {e.source_id}
+            </small>
+          </div>
+        ))}
+      </details>
       <section className="analyst-assistance" aria-label="AI assistance">
         <h2>Additional investigation tools</h2>
         <p className="muted">
@@ -308,6 +287,7 @@ function Overview({ view }) {
     </>
   );
 }
+
 function Audit({ view }) {
   const { persona } = useSession(),
     id = view.identity.caseId;

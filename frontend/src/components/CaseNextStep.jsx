@@ -23,7 +23,7 @@ export default function CaseNextStep({ view, stale, reload, tab }) {
         {next.reviewer ? <ShieldCheck size={22} /> : <Clock size={22} />}
       </div>
       <div className="grow">
-        <span className="case-next-owner">
+        <span className="case-next-owner" data-tour="next-best-step">
           {auth.personas
             ? next.reviewer
               ? "Reviewer action"
@@ -33,11 +33,12 @@ export default function CaseNextStep({ view, stale, reload, tab }) {
             : "Next action"}
         </span>
         <h2>{next.title}</h2>
-        <p>{next.detail}</p>
+        <details className="next-action-detail">
+          <summary>Why this next step</summary>
+          <p>{next.detail}</p>
+        </details>
         {urgentOnly && (
           <p className="urgent-review-note">
-            An urgent transaction referral is separately eligible for reviewer
-            consideration; the full investigation still has gaps.{" "}
             <button
               className="linklike"
               onClick={() => {
@@ -50,6 +51,7 @@ export default function CaseNextStep({ view, stale, reload, tab }) {
                 ? "Continue as reviewer for urgent referral"
                 : "Inspect urgent referral"}
             </button>
+            <span>Full handoff still has gaps.</span>
           </p>
         )}
       </div>
