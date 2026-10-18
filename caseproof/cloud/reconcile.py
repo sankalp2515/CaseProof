@@ -10,6 +10,8 @@ from caseproof.adapters.sqlite_casestore import ConflictError
 from caseproof.domain.clock import current_clock, urgency
 from caseproof.domain.ledger import dt
 
+ACTIVE_WINDOW_SECONDS = 2 * 3600
+
 
 def reconcile(o):
     docs = o.store.documents
@@ -109,14 +111,17 @@ def reconcile(o):
     o.bank_ingestion.reconcile()
     from caseproof.cloud.bank_network import CloudBankNetwork
 
-    cases = docs.query("cases", limit=100)
-    if len(cases) == 100:
-        raise RuntimeError("CLOUD_RECONCILIATION_PAGE_LIMIT")
+    cases = docs.query("cases", limit=1000)
     refreshed = set()
     for case in cases:
         cid = case["case_id"]
         if case.get("last_delivered_revision") == case["revision"]:
             continue  # Follow-up stays open, without polling unchanged demo banks forever.
+        reported = case["metadata"].get("reported_at")
+        if reported and dt(reported).timestamp() < time.time() - ACTIVE_WINDOW_SECONDS:
+            # Past the golden hour and its follow-up window the clock no longer changes;
+            # refreshing old practice banks would only flood the queue new cases share.
+            continue
         snap = o.store.get(cid)
         if snap.clock and urgency(snap.clock) != urgency(current_clock(snap)):
             old = snap.revision
