@@ -527,7 +527,7 @@ export const STEPS = HIGHLIGHTS.map((id) => {
     return {
       ...step,
       action:
-        "Choose Continue as analyst demo to open this exact case. Next also opens its overview.",
+        "Your customer journey is complete. Use Continue as analyst in the top-right corner to investigate this exact case. Next also opens its overview.",
     };
   if (id === "graph")
     return {

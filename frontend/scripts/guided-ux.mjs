@@ -177,7 +177,10 @@ try {
     .getByRole("button", { name: "Start a fresh practice session" })
     .click();
   assert.equal((await fresh).status(), 200);
-  await p.locator(".customer-option:has(.incident-hint)").first().waitFor({ timeout: 90000 });
+  await p
+    .locator(".customer-option:has(.incident-hint)")
+    .first()
+    .waitFor({ timeout: 90000 });
   await p.waitForFunction(
     () => !document.querySelector(".customer-option")?.disabled,
   );
@@ -272,29 +275,153 @@ try {
         })
         .isVisible()),
   );
+  // Hold only the real POST response until the busy-state assertions finish.
+  // The backend still generates the actual image; no response data is fabricated.
+  let sampleGate;
+  await p.route("**/v1/victim/sample-evidence", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    const response = await route.fetch();
+    await sampleGate;
+    await route.fulfill({ response });
+  });
   for (const kind of ["receipt", "chat", "call log"]) {
+    let release;
+    sampleGate = new Promise((resolve) => {
+      release = resolve;
+    });
     await p
       .getByRole("button", { name: "Create synthetic " + kind, exact: true })
       .click();
+    try {
+      await p
+        .getByRole("button", { name: `Creating ${kind}…`, exact: true })
+        .waitFor();
+      check(
+        `Only ${kind} shows generation progress`,
+        (await p
+          .locator('.sample-evidence button[aria-busy="true"]')
+          .count()) === 1,
+      );
+      for (const other of ["receipt", "chat", "call log"].filter(
+        (value) => value !== kind,
+      )) {
+        check(
+          `${other} keeps its label while ${kind} generates`,
+          await p
+            .getByRole("button", {
+              name: "Create synthetic " + other,
+              exact: true,
+            })
+            .isDisabled(),
+        );
+      }
+      if (kind === "receipt") await shot(p, "single-sample-progress");
+    } finally {
+      release();
+    }
     await p
       .getByRole("button", { name: "Create synthetic " + kind, exact: true })
       .waitFor({ state: "visible", timeout: 90000 });
-    await p.waitForFunction(
-      () =>
-        !Array.from(document.querySelectorAll("button")).some((b) =>
-          b.textContent.includes("Creating sample"),
-        ),
-    );
   }
   await shot(p, "practice-evidence");
   await axe(p, "practice-evidence");
+  await p.getByRole("button", { name: "Continue", exact: true }).click();
+  await restore();
+  await p
+    .getByRole("heading", {
+      name: "Review and submit your report",
+      exact: true,
+    })
+    .waitFor();
+  await p.waitForTimeout(31000);
+  check(
+    "Review remains a valid tour stage after the old warning timeout",
+    (await p
+      .getByText(/This panel is not on the current screen yet/)
+      .count()) === 0,
+  );
+  await shot(p, "tour-review-wait");
+  await minimise();
+  await p.getByRole("button", { name: "Back", exact: true }).click();
+  await restore();
+  await p
+    .getByRole("heading", { name: "Attach the bank receipt", exact: true })
+    .waitFor();
+  check(
+    "Guidance follows Back from Review to Evidence",
+    (await p
+      .getByText(/This panel is not on the current screen yet/)
+      .count()) === 0,
+  );
+  await p
+    .locator(".tour-card")
+    .getByRole("button", { name: "Back", exact: true })
+    .click();
+  await stage(3);
+  check(
+    "Tour Back opens the narrative without losing it",
+    (
+      await p
+        .getByRole("textbox", { name: "What happened?", exact: true })
+        .inputValue()
+    ).length > 5,
+  );
+  await minimise();
+  await p.getByRole("button", { name: "Continue", exact: true }).click();
+  await restore();
+  await stage(4);
+  await minimise();
   await p.getByRole("button", { name: "Continue", exact: true }).click();
   await p.getByRole("button", { name: "Submit report", exact: true }).click();
   await p.waitForURL(/victim\/complaints\/CASE-/, { timeout: 90000 });
   const cid = p.url().split("/").at(-1);
   await restore();
   await stage(5);
+  await p
+    .locator(".tour-card")
+    .getByRole("button", { name: "Back", exact: true })
+    .click();
+  await p
+    .getByRole("heading", {
+      name: "Your report is already submitted",
+      exact: true,
+    })
+    .waitFor();
+  check(
+    "Back after submission preserves the report instead of seeking an absent form",
+    (await p
+      .getByText(/This panel is not on the current screen yet/)
+      .count()) === 0,
+  );
+  await p.locator(".tour-card").getByRole("button", { name: /Next/ }).click();
+  await stage(5);
   await minimise();
+  await p
+    .locator("header")
+    .getByRole("button", { name: "Continue as analyst demo", exact: true })
+    .waitFor();
+  check(
+    "Analyst handoff is highlighted in the header",
+    (await p.locator("header .demo-handoff-button").count()) === 1,
+  );
+  check(
+    "Victim receipt no longer contains a staff handoff button",
+    (await p.locator(".receipt-status button").count()) === 0,
+  );
+  await p
+    .getByRole("complementary", { name: "Demo journey next step" })
+    .waitFor();
+  await shot(p, "report-handoff-header");
+  await axe(p, "report-handoff-header");
+  await p.setViewportSize({ width: 390, height: 844 });
+  await shot(p, "report-handoff-mobile");
+  await axe(p, "report-handoff-mobile");
+  await p.getByRole("button", { name: "Dismiss analyst guidance" }).click();
+  check(
+    "Dismissing the hint keeps the header handoff available",
+    await p.locator("header .demo-handoff-button").isVisible(),
+  );
+  await p.setViewportSize({ width: 1242, height: 668 });
   await desk
     .getByRole("status", { name: "Golden-hour priority alert", exact: true })
     .waitFor({ timeout: 30000 });

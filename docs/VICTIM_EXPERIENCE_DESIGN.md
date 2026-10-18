@@ -84,3 +84,17 @@ Manual review: start a fresh practice session, choose 10 minutes and a marked cu
 ## Remaining boundaries
 
 The existing deployed Document AI and Vertex AI Gemini configuration is preserved. Local tests deliberately use local OCR/rules and synthetic receiver services. They do not revalidate cloud sign-in or change the deployed provider. Real bank authentication, real bank connectivity, freezes, refunds and regulatory filing remain outside these tests. Automated accessibility and keyboard checks passed; screen-reader user testing and real-device usability research remain before a production accessibility claim. English copy and existing supported upload formats remain the scope.
+
+## Follow-up: evidence progress, role handoff and tour reliability
+
+The three evidence generators now retain separate labels. Only the clicked type displays “Creating receipt/chat/call log…” and `aria-busy=true`. The other actions are temporarily disabled to prevent overlapping requests, but do not imply that their files are being generated. Failure restores the controls and keeps the actual error visible.
+
+The customer receipt no longer contains an analyst action. Once the backend confirms the case, the existing top-right demo control becomes **Continue as analyst**, opens that exact case and has a dismissible next-step explanation. This is restricted to explicit demo personas. The customer-facing report, processing state and evidence remain separate from the role switch. The confirmation returns to the top, and its header stays visible while scrolling.
+
+The reported tour warning came from a combined evidence/submission highlight still looking for the evidence heading after the customer reached Review. It now follows the visible Evidence or Review stage. Both the real form's Back and the tour's Back preserve entered information and show the appropriate guidance. Back after submission explains that the report is already filed rather than seeking a vanished form. Automatic progression is latched to one transition per completed action, avoiding a double-advance race under delayed rendering.
+
+Screenshot review also found that floating minimised guidance could cover the new handoff on mobile. **Resume tour** now occupies its own normal-flow position in the victim header. The real-browser check verifies the analyst button is the actual hit target at its centre, not covered by another control.
+
+The updated guided run passed **54 checks**, including a real 31-second pause on Review, all three individual generation indicators, both Back controls, post-submission navigation, analyst/reviewer separation, both simulator acknowledgements and saved ownership. Its five accessibility scans had zero reported violations. The focused victim run passed **29 checks** and 27 scans, including header/resume overlap verification. The generation tests temporarily hold the actual backend image response for deterministic progress assertions; they do not fabricate its contents.
+
+Updated screenshots: [handoff on desktop](media/victim-experience/confirmation.png), [handoff with Resume tour on mobile](media/victim-experience/handoff-resume-mobile.png). The machine-readable validation records the current test counts. These changes remain in the independent victim-experience worktree; no push, merge, provider change or deployment was performed.

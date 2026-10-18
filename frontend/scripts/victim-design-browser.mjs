@@ -176,6 +176,32 @@ try {
     await audit("confirmation-" + width);
   }
   await page.setViewportSize({ width: 1440, height: 1000 });
+  // A minimised tour must not cover the newly highlighted header handoff.
+  await page.getByRole("button", { name: "Tour", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Minimise guidance", exact: true })
+    .click();
+  await page.goto(base + "/app/#/victim/complaints/" + caseId);
+  await page.locator("header .demo-handoff-button").waitFor();
+  await page.setViewportSize({ width: 390, height: 844 });
+  check(
+    "Minimised tour resumes inside the victim header",
+    (await page.locator("header #victim-tour-slot button").count()) === 1,
+  );
+  check(
+    "Mobile analyst handoff is not covered",
+    await page.locator("header .demo-handoff-button").evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return el.contains(
+        document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2),
+      );
+    }),
+  );
+  await shot("header-handoff-resume-mobile");
+  await audit("header-handoff-resume-mobile");
+  await page.getByRole("button", { name: /Show guidance/ }).click();
+  await page.getByRole("button", { name: "Close tour", exact: true }).click();
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page
     .getByRole("button", { name: "Continue as analyst demo", exact: true })
     .click();

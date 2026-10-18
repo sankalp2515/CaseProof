@@ -2,11 +2,11 @@
   "base_commit": "d9c37ff",
   "date": "2026-10-18",
   "build": "passed",
-  "frontend_tests": 65,
+  "frontend_tests": 69,
   "results": {
     "victim": {
-      "checks": 27,
-      "accessibility_scans": 26,
+      "checks": 29,
+      "accessibility_scans": 27,
       "violations": 0,
       "checks_passed": [
         "start-320 fits viewport",
@@ -33,6 +33,8 @@
         "confirmation-320 fits viewport",
         "confirmation-390 fits viewport",
         "confirmation-768 fits viewport",
+        "Minimised tour resumes inside the victim header",
+        "Mobile analyst handoff is not covered",
         "Analyst handoff opens the same report",
         "Invalid reply links show a recoverable error",
         "No uncaught browser errors"
@@ -82,8 +84,8 @@
       ]
     },
     "tour": {
-      "checks": 35,
-      "accessibility_scans": 3,
+      "checks": 54,
+      "accessibility_scans": 5,
       "violations": 0,
       "checks_passed": [
         "Search is a single aligned control at 1242",
@@ -104,7 +106,26 @@
         "After-payment contact time requires explicit confirmation",
         "Tour 4 actions inside 668px viewport",
         "AI example option matches the configured provider",
+        "Only receipt shows generation progress",
+        "chat keeps its label while receipt generates",
+        "call log keeps its label while receipt generates",
+        "Only chat shows generation progress",
+        "receipt keeps its label while chat generates",
+        "call log keeps its label while chat generates",
+        "Only call log shows generation progress",
+        "receipt keeps its label while call log generates",
+        "chat keeps its label while call log generates",
+        "Review remains a valid tour stage after the old warning timeout",
+        "Guidance follows Back from Review to Evidence",
+        "Tour 3 actions inside 668px viewport",
+        "Tour Back opens the narrative without losing it",
+        "Tour 4 actions inside 668px viewport",
         "Tour 5 actions inside 668px viewport",
+        "Back after submission preserves the report instead of seeking an absent form",
+        "Tour 5 actions inside 668px viewport",
+        "Analyst handoff is highlighted in the header",
+        "Victim receipt no longer contains a staff handoff button",
+        "Dismissing the hint keeps the header handoff available",
         "Golden-hour case triggers reference-style alert on open analyst queue",
         "Bank-selected alert amount is sourced before OCR",
         "First contact does not replace the bank debit clock",
@@ -154,5 +175,17 @@
   },
   "local_url": "http://127.0.0.1:8208",
   "provider_mode": "Isolated local OCR/rules/worker/simulators. No cloud provider or deployment changes.",
-  "cloud": "Existing deployed Document AI / Vertex AI Gemini configuration preserved; not revalidated by these local tests."
+  "cloud": "Existing deployed Document AI / Vertex AI Gemini configuration preserved; not revalidated by these local tests.",
+  "followup": {
+    "changes": [
+      "Individual evidence generation progress and failure recovery",
+      "Demo-only exact-case handoff in header with dismissible guidance",
+      "Evidence/Review tour tracking, Back navigation and single-step progression",
+      "Inline victim tour resume avoids covering the header handoff"
+    ],
+    "guided_review_pause_seconds": 31,
+    "backend_changed": false,
+    "deployed": false,
+    "frontend_tests": 69
+  }
 }

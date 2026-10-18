@@ -189,3 +189,52 @@ it("global launcher reopens the welcome dialog even when guidance was minimised"
     screen.getByRole("heading", { name: "Welcome: the golden hour" }),
   ).toBeTruthy();
 });
+
+it("keeps the combined evidence step valid while the customer reviews for over 30 seconds", async () => {
+  vi.useFakeTimers();
+  const review = document.createElement("h2");
+  review.dataset.tour = "report-review";
+  review.scrollIntoView = vi.fn();
+  document.body.append(review);
+  try {
+    location.hash = "#/victim/report";
+    render(<TourOverlay />);
+    act(() => tour.start(STEPS.findIndex((item) => item.id === "evidence")));
+    await act(async () => vi.advanceTimersByTime(32000));
+    expect(
+      screen.getByRole("heading", { name: "Review and submit your report" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByText(/This panel is not on the current screen yet/),
+    ).toBeNull();
+    expect(screen.getByRole("button", { name: /Next/ }).disabled).toBe(true);
+    await act(async () => {
+      location.hash = "#/victim/complaints/CASE-tour-test";
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+    });
+    await act(async () => vi.advanceTimersByTime(600));
+    expect(STEPS[tour.get().index].id).toBe("registered");
+  } finally {
+    cleanup();
+    review.remove();
+    vi.useRealTimers();
+  }
+});
+
+it("places minimised victim guidance inside its header instead of over its buttons", () => {
+  const slot = document.createElement("span");
+  slot.id = "victim-tour-slot";
+  document.body.append(slot);
+  try {
+    render(<TourOverlay />);
+    act(() => tour.start(0));
+    fireEvent.click(screen.getByRole("button", { name: "Minimise guidance" }));
+    expect(slot.textContent).toBe("Resume tour");
+    expect(document.querySelector(".tour-resume")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Show guidance/ }));
+    expect(screen.getByRole("dialog")).toBeTruthy();
+  } finally {
+    cleanup();
+    slot.remove();
+  }
+});

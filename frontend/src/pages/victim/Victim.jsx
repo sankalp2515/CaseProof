@@ -12,6 +12,7 @@ import {
   Clock,
   Landmark,
   MessageSquare,
+  X,
 } from "lucide-react";
 import {
   Card,
@@ -41,12 +42,25 @@ import { recentPayments, contactWarning } from "../../models/reportGuidance.js";
 import { TourButton } from "../../tour/Tour.jsx";
 
 export default function Victim({ route }) {
+  const appRef = useRef(null);
   const parts = route.split("/");
   const [reportStep, setReportStep] = useState(0);
+  const [registeredCase, setRegisteredCase] = useState(null);
+  const [dismissedHandoff, setDismissedHandoff] = useState(null);
+  const handoffCase =
+    parts[2] === "complaints" && registeredCase === parts[3]
+      ? registeredCase
+      : null;
   const reporting = parts[2] === "report";
   const { setPersona } = useSession();
+  useEffect(() => {
+    if (handoffCase && appRef.current) appRef.current.scrollTop = 0;
+  }, [handoffCase]);
   return (
-    <div className={"victim-app victim-premium victim-page-" + parts[2]}>
+    <div
+      ref={appRef}
+      className={"victim-app victim-premium victim-page-" + parts[2]}
+    >
       <a
         className="victim-skip"
         href="#victim-content"
@@ -74,15 +88,26 @@ export default function Victim({ route }) {
         </button>
         <div className="row gap8 victim-header-actions">
           <TourButton />
+          <span id="victim-tour-slot" />
           {auth.personas && (
             <button
-              className="btn sm"
+              className={
+                "btn sm" + (handoffCase ? " primary demo-handoff-button" : "")
+              }
+              data-tour="analyst-demo-handoff"
+              aria-label={
+                handoffCase ? "Continue as analyst demo" : "Analyst demo"
+              }
               onClick={() => {
                 setPersona("analyst");
-                go("/staff/queue");
+                go(
+                  handoffCase
+                    ? `/staff/cases/${handoffCase}/overview`
+                    : "/staff/queue",
+                );
               }}
             >
-              Analyst demo
+              {handoffCase ? "Continue as analyst" : "Analyst demo"}
             </button>
           )}
           <span className="practice-label">
@@ -91,6 +116,29 @@ export default function Victim({ route }) {
           </span>
         </div>
       </header>
+      {auth.personas && handoffCase && dismissedHandoff !== handoffCase && (
+        <aside
+          className="demo-handoff-notice"
+          aria-label="Demo journey next step"
+        >
+          <div role="status">
+            <span className="eyebrow">Next in your demo</span>
+            <h2>Your report is submitted.</h2>
+            <p>
+              You’ve completed the customer journey. Use{" "}
+              <b>Continue as analyst</b> above to explore this case’s
+              investigation, money trail and next action.
+            </p>
+          </div>
+          <button
+            className="icon-btn"
+            aria-label="Dismiss analyst guidance"
+            onClick={() => setDismissedHandoff(handoffCase)}
+          >
+            <X size={16} />
+          </button>
+        </aside>
+      )}
       <details className="mobile-reporting-support">
         <summary>
           <Clock size={16} />
@@ -174,7 +222,11 @@ export default function Victim({ route }) {
           ) : parts[2] === "report" ? (
             <Report onStepChange={setReportStep} />
           ) : parts[2] === "complaints" ? (
-            <Complaint key={parts[3]} caseId={parts[3]} />
+            <Complaint
+              key={parts[3]}
+              caseId={parts[3]}
+              onRegistered={setRegisteredCase}
+            />
           ) : parts[2] === "reply" ? (
             <Reply key={parts[3]} token={decodeURIComponent(parts[3] || "")} />
           ) : (
@@ -613,6 +665,15 @@ function Report({ onStepChange }) {
       heading?.scrollIntoView({ behavior: "instant", block: "center" });
     }
   }, [step, onStepChange]);
+  useEffect(() => {
+    const back = (event) => {
+      if (action.busy || ![0, 1].includes(event.detail)) return;
+      setStep((current) => Math.min(current, event.detail));
+      setValidation("");
+    };
+    window.addEventListener("caseproof:report-back", back);
+    return () => window.removeEventListener("caseproof:report-back", back);
+  }, [action.busy]);
   const account = me.data?.customer.account;
   useEffect(() => {
     if (account) setJournal(readJournal(account));
@@ -1052,8 +1113,7 @@ function UploadList({ files, setFiles }) {
     </div>
   );
 }
-function Complaint({ caseId }) {
-  const { setPersona } = useSession();
+function Complaint({ caseId, onRegistered }) {
   const resource = useResource(
       "victim-case:" + caseId,
       (signal) => apiRequest("/v1/victim/complaints/" + caseId, { signal }),
@@ -1067,6 +1127,9 @@ function Complaint({ caseId }) {
     account = me.data?.customer.account,
     journal = account ? readJournal(account) : null;
   const run = (fn) => action.run(fn).catch(() => {});
+  useEffect(() => {
+    if (c) onRegistered(caseId);
+  }, [!!c, caseId, onRegistered]);
   return (
     <>
       <button className="btn ghost" onClick={() => go("/victim/home")}>
@@ -1099,17 +1162,6 @@ function Complaint({ caseId }) {
                 </span>
                 <div className="grow">
                   <h2>Report registered</h2>
-                  {auth.personas && (
-                    <button
-                      className="btn primary"
-                      onClick={() => {
-                        setPersona("analyst");
-                        go(`/staff/cases/${caseId}/overview`);
-                      }}
-                    >
-                      Continue as analyst demo <ArrowRight size={14} />
-                    </button>
-                  )}
                   <p>{label(c.status)}</p>
                 </div>
                 <Status value={c.processing?.state} />
