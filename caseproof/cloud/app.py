@@ -115,6 +115,12 @@ def create_app(settings, orchestrator=None, *, worker=False):
     async def missing(request, error):
         return JSONResponse({"detail": "resource_not_found"}, status_code=404)
 
+    from caseproof.adapters.firestore_casestore import CaseLimitError
+
+    @app.exception_handler(CaseLimitError)
+    async def case_limit(request, error):
+        return JSONResponse({"detail": str(error)}, status_code=429)
+
     @app.exception_handler(ValueError)
     async def invalid(request, error):
         return JSONResponse({"detail": "invalid_request_or_state"}, status_code=422)

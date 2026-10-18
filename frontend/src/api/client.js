@@ -10,6 +10,10 @@ const MESSAGES = {
     "This file is still being virus-scanned, or it was rejected as unsafe. It opens once it is confirmed clean.",
   daily_practice_session_limit:
     "Today's practice sessions are used up. They reset at 05:30 IST; you can still continue an existing session.",
+  daily_case_limit:
+    "Today's practice reports are used up. They reset at 05:30 IST.",
+  session_case_limit:
+    "This practice session has reached its report limit. Start a fresh practice session to continue.",
   invalid_request_or_state:
     "That could not be accepted. Attach a PNG or JPEG screenshot or photo, or a plain-text file, up to 5 MB.",
   request_body_limit:

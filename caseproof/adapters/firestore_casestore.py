@@ -22,6 +22,13 @@ PROCESS_EVENTS = {
 }
 
 
+TENANT_CASE_LIMIT = 25
+
+
+class CaseLimitError(RuntimeError):
+    """A demo complaint limit was reached; carries a user-facing code."""
+
+
 def identity(*parts):
     return hash_json(list(parts))
 
@@ -57,11 +64,25 @@ class FirestoreCaseStore:
         def commit(tx):
             if tx.get(self.case_path(cid)):
                 raise ConflictError("case_already_exists")
-            limits = tx.get("demo_limits/cases") or {"count": 0}
-            if limits["count"] >= self.max_cases:
-                raise ValueError("cloud_demo_case_limit")
-            limits["count"] += 1
-            tx.set("demo_limits/cases", limits)
+            # Daily across all visitors, plus a per-practice-session share, so the demo
+            # never runs out permanently and one visitor cannot use everyone's budget.
+            from datetime import datetime, timezone
+
+            day = datetime.now(timezone.utc).date().isoformat()
+            daily_path, tenant_path = (
+                "demo_limits/cases-" + day,
+                "demo_limits/tenant-cases-" + identity(tenant_id),
+            )
+            daily = tx.get(daily_path) or {"count": 0}
+            mine = tx.get(tenant_path) or {"count": 0}
+            if daily["count"] >= self.max_cases:
+                raise CaseLimitError("daily_case_limit")
+            if mine["count"] >= TENANT_CASE_LIMIT:
+                raise CaseLimitError("session_case_limit")
+            daily["count"] += 1
+            mine["count"] += 1
+            tx.set(daily_path, daily)
+            tx.set(tenant_path, mine)
             tx.set(
                 self.case_path(cid),
                 {
