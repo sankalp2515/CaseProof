@@ -8,18 +8,13 @@ import { useSession } from "../state/resources.jsx";
 // The "so what": the manual steps a fraud analyst normally does one by one,
 // each shown with what this system actually produced for this case.
 export function WorkDone({ view }) {
-  const s = view.snapshot,
-    w = view.workflow;
+  const s = view.snapshot;
   const positions = s.trail?.positions || [];
   const sum = (status) =>
     positions
       .filter((p) => p.status === status)
       .reduce((n, p) => n + (p.amount_minor || 0), 0);
   const banks = new Set(positions.map((p) => p.account)).size;
-  const seconds =
-    w.reported_at && s.clock?.as_of
-      ? Math.round((new Date(s.clock.as_of) - new Date(w.reported_at)) / 1000)
-      : null;
   const rows = [
     [
       "Read the customer's story and receipt, retype the facts",
@@ -86,9 +81,6 @@ export function WorkDone({ view }) {
           </tbody>
         </table>
         <p className="muted small">
-          {seconds != null && seconds >= 0 && seconds < 900
-            ? `First assessment ready ${seconds} seconds after the report. `
-            : ""}
           The analyst still decides, and a reviewer still approves.
         </p>
       </div>
