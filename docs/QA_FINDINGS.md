@@ -146,3 +146,30 @@ Bank jargon on screen (disposition, REVIEW_REQUIRED, ledger_coverage, revision r
 switching personas through a "Demo identity" dropdown; no before/after view of the analyst's
 saved effort; spinners during 10–53 s waits; agentic investigation still off; accessibility
 not audited; README, deck and video not done.
+
+## Round 3 (18 October, staging build after the delivery-window fix) — status
+
+Verified on staging with live Document AI, Gemini 3.5 Flash and BigQuery: acceptance 36/36,
+guided tour 38/38 (15 highlights), practice bank ready in 5–10 s (single BigQuery MERGE).
+
+Fixed this round: lifetime 50-complaint cap that silently blocked every new complaint
+(now 500/day + 25/session); split delivery when a bank update landed between the two sends
+(export now opens a 3-minute delivery window for automatic bank updates); repeat-complaint
+reprocessing loop; trail conflict on a second refresh; ledger-coverage wait; tour rewritten
+around the golden-hour story, roles and the AI features; plain-language brief summary.
+
+Open, in priority order:
+1. Domain: sslip.io may be blocked or distrusted (decision: buy a domain or use Firebase Hosting).
+2. Gemini capacity: a Mumbai 429 hides the AI summary/investigator silently (consider the
+   global endpoint for these on-demand features, and a visible "try again").
+3. Victim and analyst must share one browser; cross-device judges see "No practice session".
+4. A scheduled cash-out (minute 20/30/45/55 after the scam) creates a new case version; if it
+   lands just before approval, the reviewer must reload and approve again (by design).
+5. Linked complaints show on the later complaint only (linking looks back 72 hours).
+6. Per-case Gemini budget (24 calls) shared by summary and image reading; heavy use can hit it.
+7. Synthetic realism: one scam template, clean typed receipts, OCR never struggles.
+8. Accessibility: sampled axe scans are clean, but no full audit; no Hindi interface.
+9. Analyst workspace is not designed for phones.
+10. Local stack: cash-outs are cloud-only; three OCR tests need Linux (Tesseract).
+11. Trade-offs: API may write synthetic bank data; customer reply links are bearer links;
+    staging costs ~US$3–4/day with warm API, worker and scanner.
