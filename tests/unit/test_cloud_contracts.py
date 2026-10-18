@@ -34,6 +34,41 @@ class HTTP:
         return self.request("GET", url, **kwargs)
 
 
+def test_reconcile_case_scan_respects_real_firestore_bound_and_recent_window(monkeypatch):
+    from caseproof.cloud.reconcile import reconcile
+
+    service = HTTP([(200, [])])
+    production = FirestoreDocuments("caseproof-test", "offline", session=service)
+
+    class StrictDocuments(Documents):
+        def query(self, collection, filters=(), limit=100, **kwargs):
+            if collection == "cases":
+                return production.query(collection, filters, limit, **kwargs)
+            return super().query(collection, filters, limit)
+
+    monkeypatch.setattr("caseproof.cloud.reconcile.CloudTasks", lambda *a: SimpleNamespace())
+    settings = SimpleNamespace(
+        google_cloud_project="test",
+        google_cloud_location="asia-south1",
+        cloud_tasks_queue="queue",
+        cloud_worker_url="https://worker.run.app",
+        cloud_tasks_account="tasks@test.iam.gserviceaccount.com",
+    )
+    result = reconcile(
+        SimpleNamespace(
+            store=FirestoreCaseStore(StrictDocuments()),
+            s=settings,
+            bank_ingestion=SimpleNamespace(reconcile=lambda: None),
+        )
+    )
+    assert result["cases_checked"] == 0
+    query = service.calls[0][2]["json"]["structuredQuery"]
+    assert query["limit"] <= 500
+    assert query["where"]["fieldFilter"]["field"]["fieldPath"] == "metadata.reported_at"
+    assert query["where"]["fieldFilter"]["op"] == "GREATER_THAN_OR_EQUAL"
+    assert query["orderBy"][0]["direction"] == "DESCENDING"
+
+
 def test_firestore_native_types_and_transaction_retry_and_create_preconditions():
     value = {"text": "हिन्दी", "money": 7327400, "flag": True, "empty": None, "rows": [1, 0.5]}
     assert decode(encode(value)) == value

@@ -73,21 +73,35 @@ class FirestoreDocuments:
         response.raise_for_status()
         return {k: decode(v) for k, v in response.json().get("fields", {}).items()}
 
-    def query(self, collection, filters=(), limit=100):
+    def query(self, collection, filters=(), limit=100, *, lower_bound=None):
         if not re.fullmatch(r"[A-Za-z0-9_-]+", collection) or not 1 <= limit <= 500:
             raise ValueError("Bounded collection query required")
         query = {"from": [{"collectionId": collection}], "limit": limit}
-        if filters:
-            clauses = [
+        clauses = [
+            {
+                "fieldFilter": {
+                    "field": {"fieldPath": field},
+                    "op": "EQUAL",
+                    "value": encode(value),
+                }
+            }
+            for field, value in filters
+        ]
+        if lower_bound is not None:
+            field, value = lower_bound
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*", field):
+                raise ValueError("Invalid query field")
+            clauses.append(
                 {
                     "fieldFilter": {
                         "field": {"fieldPath": field},
-                        "op": "EQUAL",
+                        "op": "GREATER_THAN_OR_EQUAL",
                         "value": encode(value),
                     }
                 }
-                for field, value in filters
-            ]
+            )
+            query["orderBy"] = [{"field": {"fieldPath": field}, "direction": "DESCENDING"}]
+        if clauses:
             query["where"] = (
                 clauses[0]
                 if len(clauses) == 1

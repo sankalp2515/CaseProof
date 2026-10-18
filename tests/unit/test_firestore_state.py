@@ -18,12 +18,23 @@ class Documents:
     def get(self, path):
         return copy.deepcopy(self.rows.get(path))
 
-    def query(self, collection, filters=(), limit=100):
-        return [
+    def query(self, collection, filters=(), limit=100, *, lower_bound=None):
+        rows = [
             copy.deepcopy(v)
             for k, v in self.rows.items()
             if k.startswith(collection + "/") and all(v.get(f) == x for f, x in filters)
-        ][:limit]
+        ]
+        if lower_bound is not None:
+            field, minimum = lower_bound
+
+            def value(row):
+                for part in field.split("."):
+                    row = row.get(part, {})
+                return row
+
+            rows = [r for r in rows if value(r) and value(r) >= minimum]
+            rows.sort(key=value, reverse=True)
+        return rows[:limit]
 
     def transact(self, operation):
         with self.lock:

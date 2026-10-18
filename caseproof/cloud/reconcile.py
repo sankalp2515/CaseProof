@@ -111,7 +111,8 @@ def reconcile(o):
     o.bank_ingestion.reconcile()
     from caseproof.cloud.bank_network import CloudBankNetwork
 
-    cases = docs.query("cases", limit=1000)
+    cutoff = datetime.fromtimestamp(time.time() - ACTIVE_WINDOW_SECONDS, timezone.utc).isoformat()
+    cases = docs.query("cases", limit=500, lower_bound=("metadata.reported_at", cutoff))
     refreshed = set()
     for case in cases:
         cid = case["case_id"]
